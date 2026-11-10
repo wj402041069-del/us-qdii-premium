@@ -20,7 +20,7 @@ h1{font-size:19px;font-weight:600;margin:0 0 4px}
 .kpi .k{font-size:11px;color:var(--muted)}
 .kpi .v{font-size:18px;font-weight:600;margin-top:2px}
 .kpi .n{font-size:11px;color:var(--muted)}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:start}
+.grid{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
 .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 select,input,button{font:13px system-ui,-apple-system,"Microsoft YaHei",sans-serif;border:1px solid var(--line);background:#fff;color:var(--text);border-radius:7px;padding:5px 9px}
@@ -45,19 +45,8 @@ tr.grp td{background:#f4f7fb;color:var(--muted);font-size:11px}
 .tag.bad{color:var(--red);border-color:#f2c2c2;background:#fdf0f0}
 .tag.ok{color:var(--green);border-color:#b6e2ce;background:#edf8f2}
 .small{font-size:11px;color:var(--muted)}
-.chat{position:sticky;top:12px;display:flex;flex-direction:column;height:calc(100vh - 40px);min-height:520px}
-.chat h2{font-size:14px;font-weight:600;margin:0 0 6px}
-.msgs{flex:1;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:10px;background:#fbfcfe}
-.msg{margin-bottom:10px;white-space:pre-wrap;word-break:break-word}
-.msg.u{text-align:right;color:var(--blue)}
-.msg.a{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
-.msg table{font-size:11px;margin-top:8px;white-space:normal}
-.msg th,.msg td{padding:4px 6px}
-.chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
 .chip{font-size:11px;padding:3px 7px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;color:var(--muted)}
 .chip:hover{color:var(--blue);border-color:#9db8d8}
-.ask{display:flex;gap:6px}
-.ask input{flex:1}
 .notice{background:#fdf7ea;border:1px solid #f0d7a6;color:#7a560b;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:12px}
 .notice.err{background:#fdf0f0;border-color:#f2c2c2;color:#8d2b20}
 footer{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.8}
@@ -79,7 +68,7 @@ footer{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.8}
 .limcard .tblbox{max-height:300px}
 .limcard tbody tr{cursor:pointer}
 .limcard tbody tr:hover td{background:#eaf3fd}
-@media(max-width:1100px){.grid{grid-template-columns:1fr}.chat{position:static;height:520px}.kpis{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
@@ -157,12 +146,6 @@ footer{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.8}
           <div class="legend"><span><i class="dot" style="background:#185fa5"></i>标普500</span><span><i class="dot" style="background:#6a4fb3"></i>纳指100</span><span>绿色虚线框为低溢价·低误差区</span></div>
         </div>
       </div>
-    </div>
-    <div class="card chat">
-      <h2>对话窗口 <span class="small" style="font-weight:400">浏览器内规则引擎 · 无需联网/大模型</span></h2>
-      <div class="msgs" id="msgs"></div>
-      <div class="chips" id="chips"></div>
-      <div class="ask"><input id="txtAsk" placeholder="例如：今天溢价最高的 5 只"><button class="primary" id="btnAsk">发送</button></div>
     </div>
   </div>
   <footer id="footer"></footer>
@@ -457,176 +440,10 @@ function renderLimitRank(){
   });
 }
 
-/* ---------------- 浏览器内规则引擎（本地版 Python 引擎的等价移植） -------------- */
+/* ---------- 表格、限额榜与数据源面板共用的显示辅助 ---------- */
 const IDX={SP500:'标普500',NDX100:'纳指100'}, VEN={ETF:'ETF',LOF:'LOF',OTC:'场外'};
 const nf=(v,d=2,s='')=>(v===null||v===undefined||v==='')?'—':(typeof v==='number'?v.toFixed(d)+s:String(v)+s);
 const sn=(n,k=18)=>!n?'':(n.length>k?n.slice(0,k)+'…':n);
-function tableFor(items,kind){
-  let cols,rows;
-  if(kind==='premium'){
-    cols=['代码','名称','指数','场所','主溢价%','静态%','估算净值','规模(亿)','申购','口径'];
-    rows=items.map(r=>[r.code,sn(r.name),IDX[r.index_key]||r.index_key,VEN[r.venue]||r.venue,
-      nf(val(r,'primary')),nf(r.static),nf(r.est_nav,4),nf(r.scale_yi,1),r.purchase_status||'—',
-      r.downgraded?'静态降级':(r.quality==='存疑'?'存疑':'估算')]);
-  }else if(kind==='tracking'){
-    cols=['代码','名称','指数','TE%','TD%','R²','样本','溢价扰动','状态'];
-    rows=items.map(r=>[r.code,sn(r.name),IDX[r.index_key]||r.index_key,nf(r.te),nf(r.td),
-      nf(r.r2,3),r.te_n||'—',nf(r.premium_noise),r.te_status||'—']);
-  }else if(kind==='scale'){
-    cols=['代码','名称','指数','场所','规模(亿)','规模口径','报告期','成交额(亿)','评分'];
-    rows=items.map(r=>[r.code,sn(r.name),IDX[r.index_key]||r.index_key,VEN[r.venue]||r.venue,
-      nf(r.scale_yi,1),r.scale_source||'—',r.scale_date||'—',nf(r.amount_yi),nf(r.score,1)]);
-  }else{
-    cols=['代码','名称','指数','主溢价%','TE%','规模(亿)','评分'];
-    rows=items.map(r=>[r.code,sn(r.name),IDX[r.index_key]||r.index_key,nf(val(r,'primary')),
-      nf(r.te),nf(r.scale_yi,1),nf(r.score,1)]);
-  }
-  return {columns:cols,rows:rows};
-}
-function findCode(q){
-  const m=q.match(/(?<!\d)(\d{6})(?!\d)/);
-  if(m){const h=ROWS.find(r=>r.code===m[1]);if(h)return h;}
-  for(const r of ROWS){
-    const frag=(r.name||'').replace(/ETF|LOF|QDII|联接|指数|基金|\(.*?\)|（.*?）/g,'');
-    if(frag.length>=3&&q.includes(frag))return r;
-  }
-  return null;
-}
-function applyFilters(q){
-  let out=ROWS.slice();
-  if(/标普|s&p|sp500|标准普尔/i.test(q)&&!/纳斯达克|纳指/.test(q)) out=out.filter(r=>r.index_key==='SP500');
-  else if(/纳指|纳斯达克|ndx/i.test(q)) out=out.filter(r=>r.index_key==='NDX100');
-  if(/场内|etf|lof/i.test(q)&&!/场外/.test(q)) out=out.filter(r=>r.venue==='ETF'||r.venue==='LOF');
-  else if(/场外|联接/.test(q)) out=out.filter(r=>r.venue==='OTC');
-  if(/美元/.test(q)) out=out.filter(r=>r.currency==='USD');
-  else if(/人民币/.test(q)) out=out.filter(r=>r.currency==='CNY');
-  let m=q.match(/规模\s*(?:大于|超过|>)\s*([\d.]+)\s*亿/);
-  if(m) out=out.filter(r=>r.scale_yi!==null&&r.scale_yi>+m[1]);
-  m=q.match(/溢价\s*(?:小于|低于|<)\s*([\d.]+)/);
-  if(m) out=out.filter(r=>val(r,'primary')!==null&&val(r,'primary')<+m[1]);
-  m=q.match(/溢价\s*(?:大于|超过|>)\s*([\d.]+)/);
-  if(m) out=out.filter(r=>val(r,'primary')!==null&&val(r,'primary')>+m[1]);
-  if(/限购|暂停申购|买不了|能买/.test(q)) out=out.filter(r=>/暂停|限/.test(r.purchase_status||''));
-  return out;
-}
-function topN(q){
-  const m=q.match(/(?:前|top\s*)(\d+)|(\d+)\s*只/i);
-  return m?Math.min(+(m[1]||m[2]),30):8;
-}
-function explainRow(r){
-  const L=[`${r.code} ${r.name}（${IDX[r.index_key]||''} · ${VEN[r.venue]||''}）`];
-  if(r.price!==null&&r.price!==undefined){
-    const gap=(val(r,'primary')!==null&&r.static!==null)?val(r,'primary')-r.static:null;
-    const peers=ROWS.filter(x=>x.index_key===r.index_key&&val(x,'primary')!==null).map(x=>val(x,'primary')).sort((a,b)=>a-b);
-    const med=peers.length?peers[Math.floor(peers.length/2)]:null;
-    L.push(`现价 ${r.price.toFixed(4)}，最新披露净值 ${nf(r.nav,4)}（净值日 ${r.nav_date||'—'}）。`);
-    L.push(`估算净值 ${nf(r.est_nav,4)}：净值对应美股收盘 ${r.us_nav_session||'—'}，估值时点 ${r.us_price_session||'—'}，指数×汇率放大 ${nf(r.est_ratio,4)} 倍。`);
-    L.push(`估算溢价 ${nf(val(r,'primary'),2,'%')}，静态溢价 ${nf(r.static,2,'%')}；两者差 ${nf(gap===null?null:Math.abs(gap),2,'pp')}。`);
-    if(gap!==null&&Math.abs(gap)>0.05) L.push('差额来自净值披露滞后期间的指数与汇率涨跌，属于被静态口径虚增的部分，估算口径已剔除。');
-    else L.push('两者一致：净值日与价格日对应同一美股收盘，估算净值无需调整。因此这个溢价是真实的场内溢价，不是净值滞后造成的虚高。');
-    if(med!==null) L.push(`同指数溢价中位数 ${med.toFixed(2)}%，本基金${val(r,'primary')>med?'高于':'低于'}中位数 ${Math.abs(val(r,'primary')-med).toFixed(2)}pp。`);
-  }else L.push('这是场外份额，按净值申赎、本身没有溢价。');
-  L.push(`申购状态 ${r.purchase_status||'—'}`+
-    (r.venue==='OTC'&&limNum(r)!==null?`，日累计限额 ${limText(limNum(r))}/日`:'（场内二级市场买卖，无申赎限额）')+
-    '；QDII 额度受限、暂停申购时，场外套利与申购受阻，买盘挤到场内把价格推高，是溢价的主要成因。');
-  L.push(`规模 ${nf(r.scale_yi,1,' 亿')}（${r.scale_source||'—'}），成交额 ${nf(r.amount_yi,2,' 亿')}，年化跟踪误差 ${nf(r.te,2,'%')}，综合评分 ${nf(r.score,1)}。`);
-  if(r.doubt) L.push(`口径提示：${r.doubt}。`);
-  return L.join('\n');
-}
-function answer(q){
-  q=(q||'').trim();
-  if(!q) return {reply:'直接问就行，例如「今天溢价最高的 5 只」。',table:null,action:null};
-  if(/刷新|更新数据|重新拉|重新抓/.test(q)) return {reply:'线上版不需要手动刷新：每天北京时间 21:00 自动跑一次，21:30 与 23:00 只在未成功时补跑。页面数据日 '+(meta.price_date||'—')+'，生成时间 '+(meta.generated_at||'—')+'。',table:null,action:null};
-  if(/导出|下载|csv/i.test(q)) return {reply:'正在生成 ranking.csv（含全部代码与三层溢价、跟踪度、规模、评分）。',table:null,action:'export'};
-  if(/帮助|能问什么|怎么问|示例/.test(q)) return {reply:'可以问：今天溢价最高的 5 只 / 标普500 里跟踪误差最小 / 规模大于50亿且溢价低于3% / 哪些基金暂停申购 / 限购最严的 5 只 / TE TD R² 是什么 / 这次新增了哪些基金 / 513100 为什么溢价高 / 溢价怎么算的 / 场外替代有哪些 / 数据源怎么样。',table:null,action:null};
-  if(/\bTE\b|\bTD\b|R²|R2|R平方|决定系数|跟踪误差.*(?:意思|是什么|解释)|指标.*(?:意思|是什么|解释|注释|备注)|中文注释|怎么看|(?:日?限额|限购|额度).*(?:是什么|什么意思|含义|单位|解释|注释)/.test(q))
-    return {reply:'【跟踪度与指标中文注释】\n\n'+METRIC_NOTES.map(n=>`■ ${n[0]}　${n[1]}\n　${n[2]}`).join('\n\n')+
-      '\n\n也可以点页面上方的「指标中文注释」看表格版，或把鼠标停在表头 ⓘ 上看简注。',table:null,action:null};
-  if(/数据源|降级|多重|worker|兜底|稳定/.test(q)){
-    const ch=ST.chains||{},bad=ST.degraded_chains||[];
-    const lines=Object.entries(ch).map(([k,v])=>`${k}：${v.failed?'全部失败':v.active}`);
-    return {reply:'四层数据源：L0 a-stock-api Worker、L1 东财/腾讯/新浪直连、L2 AKShare、L3 上次成功快照。\n本次命中：\n'+lines.join('\n')+`\n降级 ${bad.length} 条；Worker ${ST.worker_reachable===true?'可达':'不可达（已自动走直连）'}。点页面上方「数据源状态」可看完整降级过程。`,table:null,action:null};
-  }
-  if(/口径|怎么算|估算溢价|静态溢价|净值滞后|为什么有两个溢价/.test(q))
-    return {reply:'静态溢价 = 场内价 / 最近披露单位净值 − 1。QDII 净值 T+1/T+2 才披露，所以这个口径把隔夜美股涨幅也算进了溢价。\n'
-      +'估算溢价（主口径）= 场内价 / 估算净值 − 1；估算净值 = 披露净值 × 基准(价格对应美股日) / 基准(净值对应美股日)，基准 = 美元指数 × USD/CNY。\n'
-      +'净值日取不晚于它的最近美股收盘，价格日取严格早于它的最近美股收盘（A股收盘时美股当天还没开盘）。两者落在同一美股日时放大系数为 1、估算溢价等于静态溢价；只有净值披露真正滞后时才补偿滞后期内的指数与汇率涨跌。'
-      +'估算所需数据缺失、净值日期过旧或结果异常时，自动降级静态溢价并标注，绝不拿滞后净值冒充实时估值。'
-      +`\n本次净值日期样本：${(meta.nav_date_sample||[]).join(', ')}；价格日期 ${meta.price_date||'—'}。`,table:null,action:null};
-  if(/新增|新基金|新加入|名单变化|退市/.test(q)){
-    const codes=sum.new_codes||[];
-    if(codes.length){const hit=ROWS.filter(r=>codes.includes(r.code));return {reply:`本次自动发现新增 ${codes.length} 只：${codes.join(', ')}。已自动纳入，历史不足的会标「样本不足」。消失 ${sum.gone_count||0} 只。`,table:tableFor(hit,'premium'),action:null};}
-    return {reply:`本次没有新增。当前池内 ${sum.total||ROWS.length} 只代码，每天自动重新扫描全量名录并纳入新基金；消失 ${sum.gone_count||0} 只。`,table:null,action:null};
-  }
-  if(/多少只|几个|统计|概况|规模总/.test(q))
-    return {reply:`池内共 ${sum.total||ROWS.length} 只代码：标普500 ${sum.sp500||0} 只、纳指100 ${sum.ndx100||0} 只；场内 ${sum.on_exchange||0} 只、场外 ${sum.off_exchange||0} 只。跟踪度有效 ${sum.te_ok||0} 只，估算降级 ${sum.downgraded||0} 只，口径存疑 ${sum.doubt||0} 只。数据日 ${meta.price_date||'—'}。`,table:null,action:null};
-  if(/限额|限购|限大额|申购额度|额度排名/.test(q)){
-    const n=topN(q);
-    let cap=null;
-    const m=q.match(/(?:限额|限购|额度)\s*(?:小于|低于|不超过|≤|<|=)?\s*([\d.]+)\s*(万元|万|元)?/);
-    if(m)cap=+m[1]*((m[2]==='万元'||m[2]==='万')?10000:1);
-    let items=ROWS.filter(r=>r.venue==='OTC'&&limKey(r)!==null);
-    if(cap!==null&&isFinite(cap)&&cap>0)items=items.filter(r=>limKey(r)<=cap);
-    items.sort((a,b)=>limSort(a)-limSort(b));
-    const tight=items.slice(0,n);
-    const tb={columns:['代码','名称','指数','申购状态','日限额','主溢价%','TE%','规模(亿)'],
-      rows:tight.map(r=>[r.code,sn(r.name),IDX[r.index_key]||r.index_key,r.purchase_status||'—',
-        limText(limNum(r)),nf(val(r,'primary')),nf(r.te),nf(r.scale_yi,1)])};
-    return {reply:(cap!==null&&isFinite(cap)&&cap>0?`日限额 ≤ ${limText(cap)} 的场外份额共 ${items.length} 只，`:'场外份额按日限额从紧到松，')+
-      `下面列出最紧的 ${tight.length} 只。\n单位：元/日；「不限」是上游极大值占位；`+
-      '暂停申购按额度 0 计入最紧（主表「限额」下拉只统计有明确金额的份额，因此两边条数会不同）。\n'+
-      '场内基金在二级市场买卖、没有申赎限额，但一级市场「暂停申购」会让套利失效、推高场内溢价。\n'+
-      '也可以直接用页面上方的「限额」下拉筛选主表格，或看下方「限额排名」卡片（支持自定义金额上限、最紧/最松排序、含场内）。',table:tb,action:null};
-  }
-  if(/替代|场外买|不买场内|溢价太高怎么办/.test(q)&&!/\d{6}/.test(q)){
-    let off=ROWS.filter(r=>r.venue==='OTC'&&r.currency==='CNY');
-    off.sort((a,b)=>((/开放申购/.test(a.purchase_status||''))?0:1)-((/开放申购/.test(b.purchase_status||''))?0:1)||(b.scale_yi||0)-(a.scale_yi||0));
-    return {reply:'场外份额按净值申赎、没有溢价，但 QDII 常见暂停申购/限大额，且确认通常 T+2。下面按「可申购优先、规模大」列出人民币场外份额；想看某只场内基金对应的家族，直接问「513100 场外替代」。',table:tableFor(off.slice(0,12),'scale'),action:null};
-  }
-  const hit=findCode(q);
-  if(hit&&/替代|场外买|不买场内|换一只/.test(q)){
-    const fam=ROWS.filter(r=>r.family===hit.family);
-    return {reply:`${hit.code} 所属家族「${hit.family}」共 ${fam.length} 个代码。场外份额按净值申赎、没有溢价，但要留意申购状态与确认时间（QDII 通常 T+2）。`,table:tableFor(fam,'scale'),action:null};
-  }
-  if(hit) return {reply:explainRow(hit),table:null,action:null};
-
-  let dim='primary',label='主溢价';
-  if(/跟踪|误差|贴合|te\b|跟踪度/i.test(q)){dim='te';label='年化跟踪误差';}
-  else if(/规模|体量/.test(q)){dim='scale_yi';label='规模';}
-  else if(/成交|流动性|换手/.test(q)){dim='amount_yi';label='成交额';}
-  else if(/评分|综合|推荐|最优|最好/.test(q)){dim='score';label='综合评分';}
-  let asc=/最低|最小|最便宜|折价|最贴合|误差最小|最好|最优|推荐/.test(q);
-  if(dim==='scale_yi'||dim==='amount_yi'||dim==='score') asc=false;
-  if(/最高|最大|最贵|最差|高溢价/.test(q)) asc=false;
-  if(/折价|最低|最小|最便宜/.test(q)&&dim==='primary') asc=true;
-  const n=topN(q);
-  let items=applyFilters(q).filter(r=>val(r,dim)!==null&&val(r,dim)!==undefined);
-  items.sort((a,b)=>asc?val(a,dim)-val(b,dim):val(b,dim)-val(a,dim));
-  items=items.slice(0,n);
-  if(!items.length){
-    const ps=ROWS.map(r=>val(r,'primary')).filter(v=>v!==null&&v!==undefined);
-    const hint=ps.length?`当前场内溢价区间 ${Math.min(...ps).toFixed(1)}%~${Math.max(...ps).toFixed(1)}%。`:'';
-    return {reply:hint+'按这个条件没筛到数据，可以放宽阈值，或换问「今天溢价最高的 5 只」。',table:null,action:null};
-  }
-  const kind=dim==='primary'?'premium':(dim==='te'?'tracking':(dim==='scale_yi'?'scale':'score'));
-  const dir=asc?'由低到高':'由高到低';
-  let extra='';
-  if(dim==='primary'){const hi=val(items[0],'primary');extra=` 当前${asc?'最低':'最高'} ${hi.toFixed(2)}%。 红色为溢价、绿色为折价；净值日期与口径见每行的口径标签。`;}
-  if(/限购|暂停申购|买不了|能买/.test(q)) return {reply:`以下 ${items.length} 只处于暂停申购或限大额状态，按${label}${dir}排列。QDII 额度受限时场外申购受阻，买盘挤到场内，往往就是溢价居高不下的原因。`,table:tableFor(items,kind),action:null};
-  return {reply:`按${label}${dir}列出 ${items.length} 只。${extra}`,table:tableFor(items,kind),action:null};
-}
-
-function addMsg(cls,text,table){
-  const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;
-  if(table&&table.rows.length){const t=document.createElement('table');t.innerHTML='<thead><tr>'+table.columns.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+table.rows.map(r=>'<tr>'+r.map(v=>`<td>${v}</td>`).join('')+'</tr>').join('')+'</tbody>';d.appendChild(t)}
-  document.getElementById('msgs').appendChild(d);document.getElementById('msgs').scrollTop=1e9;
-}
-function ask(q){
-  addMsg('u',q);
-  const a=answer(q);
-  addMsg('a',a.reply||'（无回答）',a.table);
-  if(a.action==='export')document.getElementById('btnCsv').click();
-}
 function csvDownload(){
   const cols=['code','name','index_key','venue','currency','share_class','primary_code','price','nav','nav_date','est_nav','static','estimated','primary','premium_kind','scale_yi','amount_yi','te','td','r2','premium_noise','purchase_status','limit_amount','score'];
   const csv=[cols.join(',')].concat(ROWS.map(r=>cols.map(c=>`"${(r[c]===null||r[c]===undefined?'':r[c])}"`).join(','))).join('\n');
@@ -651,17 +468,9 @@ function bind(){
   ['selLimitRank','selLimitTop','ckLimitOn'].forEach(id=>document.getElementById(id).onchange=renderLimitRank);
   document.getElementById('txtLimitMax').oninput=renderLimitRank;
   document.getElementById('btnCsv').onclick=csvDownload;
-  const chips=['今天溢价最高的 5 只','标普500 里跟踪误差最小','规模大于50亿且溢价低于3%','哪些基金暂停申购','限购最严的 5 只','限额小于100元','TE TD R² 是什么','这次新增了哪些基金','513100 为什么溢价高','溢价怎么算的','场外替代有哪些','数据源怎么样'];
-  document.getElementById('chips').innerHTML=chips.map(c=>`<span class="chip" data-q="${c}">${c}</span>`).join('');
-  document.querySelectorAll('#chips .chip').forEach(el=>el.onclick=()=>ask(el.dataset.q));
-  document.getElementById('btnAsk').onclick=()=>{const i=document.getElementById('txtAsk');const q=i.value.trim();i.value='';if(q)ask(q)};
-  document.getElementById('txtAsk').onkeydown=e=>{if(e.key==='Enter')document.getElementById('btnAsk').click()};
 }
 fillKpis();bind();renderTable();renderNotes();renderLimitRank();
 document.getElementById('notesCard').dataset.done='1';
-addMsg('a','已就绪。数据日 '+(meta.price_date||'—')+'，池内 '+(sum.total||ROWS.length)+' 只代码。问答完全在浏览器内运行，不联网也不调用大模型；可以直接问溢价、跟踪度、规模、限购限额、指标含义、口径与数据源状态。表头 ⓘ 有中文简注，点「指标中文注释」看完整说明。');
-if((sum.new_count||0)>0)addMsg('a',`本次自动发现新增 ${sum.new_count} 只：${(sum.new_codes||[]).join('、')}`);
-if(meta.stale)addMsg('a','⚠ 当前是上一次成功快照（所有实时源本次均未取到），请勿据此做当日判断。');
 </script>
 </body>
 </html>
