@@ -755,13 +755,25 @@ def collect(seed: dict, fallback_codes: list | None = None) -> dict:
         ], validator=lambda v: v is not None and len(v) > 100)
         raw["index"][key] = df
 
-    # 腾讯行情作为第三种价格源，只在东财 ETF+LOF 全挂时启用
+    # 腾讯行情作为第三种价格源，只在东财 ETF+LOF 全挂时启用。
+    # 关键约束：只看「上次已确认的场内代码」。场外 6 位代码与 A 股股票代码
+    # 会重合（000055 = 广发纳指100联接美元份额 = 深市方大集团），一旦按
+    # sz000055 请求就会取回股票价，算出 200%+ 的假溢价。请求前和请求后
+    # 都做一次白名单交集，双保险。
+    fallback_used = False
     if (raw["ETF 行情"] is None or raw["ETF 行情"].empty) and fallback_codes:
+        allowed = {str(c).zfill(6) for c in fallback_codes}
         tx = chain("ETF 行情（腾讯兜底）", [
-            ("L1 腾讯行情批量快照", lambda: direct_tencent_spot(fallback_codes))
+            ("L1 腾讯行情批量快照", lambda: direct_tencent_spot(sorted(allowed)))
         ], validator=lambda v: v is not None and len(v) > 0)
         if tx is not None:
-            raw["ETF 行情"] = tx
+            tx = tx[tx["代码"].astype(str).str.zfill(6).isin(allowed)].copy()
+            if tx.empty:
+                STATUS["warnings"].append(
+                    "腾讯兜底返回的代码均不在已确认场内白名单内，已整体丢弃")
+            else:
+                raw["ETF 行情"] = tx.reset_index(drop=True)
+                fallback_used = True
 
     empty_spot = pd.DataFrame(columns=["代码", "名称", "最新价", "IOPV实时估值", "基金折价率",
                                        "成交额", "流通市值", "总市值", "最新份额",
@@ -790,6 +802,7 @@ def collect(seed: dict, fallback_codes: list | None = None) -> dict:
         "index": raw["index"], "fx": fx,
         "fx_latest": float(fx.iloc[-1]["close"]) if not fx.empty else None,
         "price_date": price_date,
+        "price_fallback_used": fallback_used,
         "worker_premium": {},
         "seed": seed,
     }

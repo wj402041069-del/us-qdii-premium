@@ -105,6 +105,18 @@ def compute_premium(price, nav, iopv, est_nav, cfg):
     p_static = _p(nav)
     p_est = _p(est_nav)
     p_iopv = _p(iopv)
+
+    # 价格源错配护栏：QDII 场内溢价不会到 ±60% 这个量级。典型事故是场外
+    # 6 位代码与 A 股股票代码重合（000055 既是广发纳指100联接美元份额，
+    # 也是深市「方大集团」），被行情源按股票取价就会算出 200%+ 的假溢价。
+    # 宁可整行不显示溢价并标明原因，也不把一个错数写进榜单和 KPI。
+    absurd = float(cfg.get("absurd_premium_pct", 60.0))
+    if p_static is not None and abs(p_static) > absurd:
+        return {"static": None, "estimated": None, "iopv": None, "primary": None,
+                "premium_kind": "rejected", "downgraded": False,
+                "rejected": (f"静态溢价 {p_static:.1f}% 超出 ±{absurd:.0f}% 合理区间，"
+                             "疑似行情源代码错配，已剔除该行价格与溢价")}
+
     primary = cfg.get("premium_primary", "estimated")
     downgraded = False
     if primary == "estimated":
@@ -139,6 +151,8 @@ def mark_outliers(rows: list, cfg: dict):
     meds = {k: float(np.median(v)) for k, v in groups.items() if v}
     for r in rows:
         flags = []
+        if r.get("rejected"):
+            flags.append(r["rejected"])
         p = r.get("primary")
         s = r.get("static")
         if p is not None and s is not None and abs(p - s) > gap_static:

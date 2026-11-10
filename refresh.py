@@ -46,7 +46,7 @@ COLUMNS = [
     "code", "name", "index_key", "venue", "currency", "share_class", "family",
     "primary_code", "price", "nav", "nav_date", "est_nav", "est_ratio",
     "us_nav_session", "us_price_session", "iopv", "static", "estimated", "iopv_premium",
-    "primary", "premium_kind", "downgraded", "quality", "doubt",
+    "primary", "premium_kind", "downgraded", "quality", "doubt", "rejected",
     "scale_yi", "scale_source", "scale_date", "amount_yi", "te", "td", "r2",
     "te_price", "premium_noise", "te_n", "te_status", "purchase_status",
     "limit_amount", "fee", "score", "p_premium", "p_tracking", "p_scale", "p_liquidity",
@@ -87,7 +87,7 @@ def _meta(code: str, name: str, index_key: str, venue: str, cfg: dict) -> dict:
             "family": f"{index_key}|{_company(name)}"}
 
 
-def discover(names_df, etf_df, lof_df, cfg: dict) -> list:
+def discover(names_df, etf_df, lof_df, cfg: dict, venue_hint: dict | None = None) -> list:
     found = {}
     excl = re.compile(cfg["exclude_pattern"], flags=re.I)
     type_pat = re.compile(cfg["fund_type_pattern"], flags=re.I)
@@ -123,6 +123,13 @@ def discover(names_df, etf_df, lof_df, cfg: dict) -> list:
             item["venue"] = "ETF"
         elif code in lof_codes:
             item["venue"] = "LOF"
+    # 行情兜底日：以上次成功快照的场所归属为准。兜底行情表只提供价格，
+    # 不允许把一个场外基金「提升」成场内，否则就会出现假溢价。
+    if venue_hint:
+        for code, item in found.items():
+            known = venue_hint.get(code)
+            if known in ("ETF", "LOF", "OTC"):
+                item["venue"] = known
     groups = defaultdict(list)
     for item in found.values():
         groups[item["family"]].append(item)
@@ -446,7 +453,15 @@ def build_rows(rows: list, data: dict, cfg: dict, state: dict) -> list:
             "iopv_premium": prem["iopv"], "primary": prem["primary"],
             "premium_kind": prem["premium_kind"], "downgraded": prem["downgraded"],
             "amount_yi": round(amount / 1e8, 3) if amount else _seed(code, "amount_yi"),
+            "rejected": prem.get("rejected") or "",
         })
+        if prem.get("rejected"):
+            # 行情源代码错配：整行不保留任何价格与溢价数值，只留可解释的提示，
+            # 避免假数字进入排行榜、KPI、散点图和 CSV。
+            price = None
+            r.update({"price": None, "est_nav": None, "est_ratio": None,
+                      "iopv": None, "amount_yi": None,
+                      "us_nav_session": None, "us_price_session": None})
 
         # 规模（统一折算成人民币亿元）
         scale_yi, scale_src, scale_date = None, "—", None
@@ -575,7 +590,8 @@ def export(rows, meta, summary, status, premium_history, state, stale=False):
     cols = ["code", "name", "index_key", "venue", "currency", "share_class", "primary_code",
             "price", "nav", "nav_date", "est_nav", "static", "estimated", "iopv_premium",
             "primary", "premium_kind", "downgraded", "quality", "scale_yi", "amount_yi",
-            "te", "td", "r2", "premium_noise", "purchase_status", "limit_amount", "score"]
+            "te", "td", "r2", "premium_noise", "purchase_status", "limit_amount", "score",
+            "doubt", "rejected"]
     pd.DataFrame([{c: r.get(c) for c in cols} for r in rows])[cols].to_csv(
         DIST / "ranking.csv", index=False, encoding="utf-8-sig")
     write_llms(meta, rows, summary, status)
@@ -637,13 +653,20 @@ def run(progress=print):
     DIST.mkdir(parents=True, exist_ok=True)
     state = load_state()
     seed = load_seed()
-    seed_codes = [r["code"] for r in seed.get("rows", [])]
+    seed_rows = seed.get("rows", [])
+    # 腾讯兜底只请求「上次已确认的场内代码」：场外 6 位代码可能与 A 股
+    # 股票代码重合（000055 = 广发纳指100联接美元 = 深市方大集团），
+    # 拿去请求股票行情会算出 200%+ 的假溢价。
+    seed_on_codes = [r["code"] for r in seed_rows
+                     if r.get("venue") in ("ETF", "LOF")]
+    venue_hint = {r["code"]: r.get("venue") for r in seed_rows}
 
     progress("1/6 四层数据源采集 ...")
-    raw = sources.collect(seed, fallback_codes=seed_codes)
+    raw = sources.collect(seed, fallback_codes=seed_on_codes)
 
     progress("2/6 自动发现名单并比对 registry ...")
-    items = discover(raw["names"], raw["etf_spot"], raw["lof_spot"], CFG)
+    items = discover(raw["names"], raw["etf_spot"], raw["lof_spot"], CFG,
+                     venue_hint=venue_hint if raw.get("price_fallback_used") else None)
     active, new_codes, gone_codes = sync_registry(items)
     if not active:
         progress("名单发现为空，发布上一次成功快照（数据陈旧）")

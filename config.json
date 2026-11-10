@@ -18,6 +18,7 @@
   "min_te_samples": 60,
   "outlier_static_gap_pp": 6.0,
   "outlier_peer_gap_pp": 10.0,
+  "absurd_premium_pct": 60.0,
   "index_symbols_sina": {
     "SP500": ".INX",
     "NDX100": ".NDX"

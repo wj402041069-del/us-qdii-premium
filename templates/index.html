@@ -572,7 +572,8 @@ function answer(q){
       rows:tight.map(r=>[r.code,sn(r.name),IDX[r.index_key]||r.index_key,r.purchase_status||'—',
         limText(limNum(r)),nf(val(r,'primary')),nf(r.te),nf(r.scale_yi,1)])};
     return {reply:(cap!==null&&isFinite(cap)&&cap>0?`日限额 ≤ ${limText(cap)} 的场外份额共 ${items.length} 只，`:'场外份额按日限额从紧到松，')+
-      `下面列出最紧的 ${tight.length} 只。\n单位：元/日；「不限」是上游极大值占位。\n`+
+      `下面列出最紧的 ${tight.length} 只。\n单位：元/日；「不限」是上游极大值占位；`+
+      '暂停申购按额度 0 计入最紧（主表「限额」下拉只统计有明确金额的份额，因此两边条数会不同）。\n'+
       '场内基金在二级市场买卖、没有申赎限额，但一级市场「暂停申购」会让套利失效、推高场内溢价。\n'+
       '也可以直接用页面上方的「限额」下拉筛选主表格，或看下方「限额排名」卡片（支持自定义金额上限、最紧/最松排序、含场内）。',table:tb,action:null};
   }
