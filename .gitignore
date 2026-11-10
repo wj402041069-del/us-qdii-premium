@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.log
+*.tmp
+*.sqlite
+*.sqlite-journal
+.pytest_cache/
+.cache/
+prev/
+.deploy/
+dist/
+data/state.json
+!.nojekyll

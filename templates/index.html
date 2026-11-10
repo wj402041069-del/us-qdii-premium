@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>标普500 / 纳指100 QDII 溢价与跟踪度 · 线上看板</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--line:#e3e6eb;--text:#1d2330;--muted:#6b7484;--red:#c0392b;--green:#0f8a5f;--blue:#185fa5;--purple:#6a4fb3;--amber:#a8700b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:13px/1.6 system-ui,-apple-system,"Microsoft YaHei",sans-serif}
+.wrap{max-width:1680px;margin:0 auto;padding:18px 20px 40px}
+h1{font-size:19px;font-weight:600;margin:0 0 4px}
+.sub{color:var(--muted);font-size:12px}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;border:1px solid var(--line);background:#fff;margin-left:6px}
+.badge.b{background:#e9f2fc;border-color:#b9d6f2;color:var(--blue)}
+.badge.w{background:#fdf3e2;border-color:#f0d7a6;color:var(--amber)}
+.badge.g{background:#e6f5ee;border-color:#b6e2ce;color:var(--green)}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:14px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi .k{font-size:11px;color:var(--muted)}
+.kpi .v{font-size:18px;font-weight:600;margin-top:2px}
+.kpi .n{font-size:11px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+select,input,button{font:13px system-ui,-apple-system,"Microsoft YaHei",sans-serif;border:1px solid var(--line);background:#fff;color:var(--text);border-radius:7px;padding:5px 9px}
+button{cursor:pointer}
+button:hover{border-color:#9db8d8}
+button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+button.primary:hover{background:#0f4d8c}
+label.ck{display:inline-flex;gap:5px;align-items:center;color:var(--muted);font-size:12px}
+.weights{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:11px;flex-wrap:wrap}
+.weights input{width:48px;padding:3px 5px;text-align:center}
+.tblbox{overflow:auto;max-height:66vh;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}
+th{position:sticky;top:0;background:#f1f4f8;z-index:2;padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);font-weight:600;color:#3b4454;cursor:pointer}
+th.l,td.l{text-align:left}
+td{padding:6px 8px;text-align:right;border-bottom:1px solid #f0f2f5}
+tr:hover td{background:#f8fbff}
+tr.grp td{background:#f4f7fb;color:var(--muted);font-size:11px}
+.pos{color:var(--red);font-weight:600}
+.neg{color:var(--green);font-weight:600}
+.tag{font-size:10px;padding:1px 5px;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+.tag.warn{color:var(--amber);border-color:#f0d7a6;background:#fdf7ea}
+.tag.bad{color:var(--red);border-color:#f2c2c2;background:#fdf0f0}
+.tag.ok{color:var(--green);border-color:#b6e2ce;background:#edf8f2}
+.small{font-size:11px;color:var(--muted)}
+.chat{position:sticky;top:12px;display:flex;flex-direction:column;height:calc(100vh - 40px);min-height:520px}
+.chat h2{font-size:14px;font-weight:600;margin:0 0 6px}
+.msgs{flex:1;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:10px;background:#fbfcfe}
+.msg{margin-bottom:10px;white-space:pre-wrap;word-break:break-word}
+.msg.u{text-align:right;color:var(--blue)}
+.msg.a{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.msg table{font-size:11px;margin-top:8px;white-space:normal}
+.msg th,.msg td{padding:4px 6px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.chip{font-size:11px;padding:3px 7px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;color:var(--muted)}
+.chip:hover{color:var(--blue);border-color:#9db8d8}
+.ask{display:flex;gap:6px}
+.ask input{flex:1}
+.notice{background:#fdf7ea;border:1px solid #f0d7a6;color:#7a560b;border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:12px}
+.notice.err{background:#fdf0f0;border-color:#f2c2c2;color:#8d2b20}
+footer{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.8}
+.scatter{margin-top:12px}
+.legend{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-top:4px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.srcpanel{display:none;margin-bottom:12px;font-size:12px}
+.srcpanel table{white-space:normal;font-size:11px}
+.srcpanel td,.srcpanel th{text-align:left}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}.chat{position:static;height:520px}.kpis{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>国内标普500 / 纳斯达克100 被动基金 · 溢价与跟踪度<span class="badge b">线上版</span><span class="badge" id="badgeDate">—</span><span class="badge g" id="badgeSrc">—</span></h1>
+  <div class="sub">场内按溢价单独排名 · 场外按净值申赎单列 · 三层溢价口径 · 名单每天自动发现 · 北京时间 21:00 自动刷新</div>
+  <div id="notice"></div>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid">
+    <div>
+      <div class="card">
+        <div class="bar">
+          <button id="btnSrc">数据源状态</button>
+          <button id="btnCsv">导出 CSV</button>
+          <select id="selIndex"><option value="">全部指数</option><option value="SP500">标普500</option><option value="NDX100">纳指100</option></select>
+          <select id="selVenue"><option value="">全部场所</option><option value="ON">场内（ETF/LOF）</option><option value="OFF">场外</option></select>
+          <select id="selKind"><option value="estimated">主口径：估算溢价</option><option value="static">主口径：静态溢价</option></select>
+          <select id="selSort">
+            <option value="primary">按主溢价</option>
+            <option value="static">按静态溢价</option>
+            <option value="te">按跟踪误差</option>
+            <option value="scale_yi">按规模</option>
+            <option value="amount_yi">按成交额</option>
+            <option value="score">按综合评分</option>
+            <option value="code">按代码</option>
+          </select>
+          <button id="btnDir" data-dir="desc">降序 ↓</button>
+          <label class="ck"><input type="checkbox" id="ckFold">按主代码折叠</label>
+          <input id="txtSearch" placeholder="搜索代码 / 名称" style="width:150px">
+        </div>
+        <div class="srcpanel card" id="srcPanel"></div>
+        <div class="bar weights">
+          <span>评分权重</span>
+          <span>溢价<input type="number" id="w1" step="0.05" min="0" max="1"></span>
+          <span>跟踪<input type="number" id="w2" step="0.05" min="0" max="1"></span>
+          <span>规模<input type="number" id="w3" step="0.05" min="0" max="1"></span>
+          <span>流动性<input type="number" id="w4" step="0.05" min="0" max="1"></span>
+          <span class="small">（改权重即时重算综合评分，仅影响本页显示）</span>
+        </div>
+        <div class="tblbox"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+        <div class="small" id="tblInfo"></div>
+        <div class="scatter card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px">溢价 × 跟踪度分布</div>
+          <div class="small">左上＝低溢价且跟踪好；横轴年化跟踪误差 TE(%)，纵轴主溢价(%)。仅显示场内且两项都有值的基金。</div>
+          <svg id="scatter" viewBox="0 0 900 260" width="100%" height="260" role="img"></svg>
+          <div class="legend"><span><i class="dot" style="background:#185fa5"></i>标普500</span><span><i class="dot" style="background:#6a4fb3"></i>纳指100</span><span>绿色虚线框为低溢价·低误差区</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card chat">
+      <h2>对话窗口 <span class="small" style="font-weight:400">浏览器内规则引擎 · 无需联网/大模型</span></h2>
+      <div class="msgs" id="msgs"></div>
+      <div class="chips" id="chips"></div>
+      <div class="ask"><input id="txtAsk" placeholder="例如：今天溢价最高的 5 只"><button class="primary" id="btnAsk">发送</button></div>
+    </div>
+  </div>
+  <footer id="footer"></footer>
+</div>
+<script>
+const D = {{ data_json|safe }};
+const S = {kind:'estimated', sort:'primary', dir:'desc', fold:false, index:'', venue:'', search:'', expanded:{}};
+const W = [0.4,0.3,0.15,0.15];
+const meta = D.meta||{}, sum = D.summary||{}, ROWS = D.rows||[], ST = D.source_status||{};
+const fm=(v,d=2,s='')=> (v===null||v===undefined||v==='')?'—':(typeof v==='number'?v.toFixed(d)+s:String(v)+s);
+const pr=r=> S.kind==='static' ? r.static : (r.estimated!==null&&r.estimated!==undefined?r.estimated:r.static);
+const val=(r,k)=> k==='primary'?pr(r):r[k];
+const idxName=k=>k==='SP500'?'标普500':(k==='NDX100'?'纳指100':k||'—');
+const venueName=v=>v==='ETF'?'ETF':(v==='LOF'?'LOF':'场外');
+const pct=(v,d=2)=> v===null||v===undefined?'<span class="small">—</span>':`<span class="${v>0?'pos':(v<0?'neg':'')}">${v>0?'+':''}${v.toFixed(d)}%</span>`;
+
+function weightedScore(r){
+  const w=[+document.getElementById('w1').value,+document.getElementById('w2').value,+document.getElementById('w3').value,+document.getElementById('w4').value];
+  const t=w.reduce((a,b)=>a+(isFinite(b)?b:0),0)||1;
+  const p=[r.p_premium,r.p_tracking,r.p_scale,r.p_liquidity];
+  let s=0,ok=0; for(let i=0;i<4;i++){ if(p[i]!==null&&p[i]!==undefined){s+=w[i]*p[i];ok+=w[i];} }
+  return ok? s/t + (t-ok)/t*50 : null;
+}
+function fillKpis(){
+  const on=sum.on_exchange||0, off=sum.off_exchange||0;
+  const ps=ROWS.map(pr).filter(v=>v!==null&&v!==undefined);
+  const hi=ps.length?Math.max(...ps):null, lo=ps.length?Math.min(...ps):null;
+  const cards=[
+    ['池内代码',sum.total||ROWS.length,`标普500 ${sum.sp500||0} · 纳指100 ${sum.ndx100||0}`],
+    ['场内 / 场外',`${on} / ${off}`,'场内才有溢价'],
+    ['最高主溢价',hi===null?'—':(hi>0?'+':'')+hi.toFixed(2)+'%',S.kind==='estimated'?'估算口径':'静态口径'],
+    ['最低主溢价',lo===null?'—':(lo>0?'+':'')+lo.toFixed(2)+'%','负值＝折价'],
+    ['跟踪度有效',`${sum.te_ok||0} 只`,`TE 窗口 ${meta.te_window||250} 日`],
+    ['本次新增',`${sum.new_count||0} 只`,`估算降级 ${sum.downgraded||0} · 存疑 ${sum.doubt||0}`]
+  ];
+  document.getElementById('kpis').innerHTML=cards.map(c=>`<div class="kpi"><div class="k">${c[0]}</div><div class="v">${c[1]}</div><div class="n">${c[2]}</div></div>`).join('');
+  document.getElementById('badgeDate').textContent='数据日 '+(meta.price_date||'—');
+  const chains=ST.chains||{}, bad=(ST.degraded_chains||[]), opt=(ST.optional_degraded||[]);
+  const core=Object.values(chains).filter(v=>!v.optional);
+  const total=core.length;
+  document.getElementById('badgeSrc').textContent=`核心源 ${total-bad.length}/${total} 正常`+(opt.length?` · 辅助降级 ${opt.length}`:'');
+  document.getElementById('badgeSrc').className='badge '+(bad.length?'w':'g');
+  const notices=[];
+  if(meta.stale) notices.push(`<div class="notice err">⚠ 本次所有实时数据源均未取到，页面展示的是上一次成功快照（${meta.price_date||'—'}）。原因：${meta.stale_reason||'上游不可用'}。系统会在下一次补跑自动修复。</div>`);
+  if((sum.new_count||0)>0) notices.push(`本次自动新增 ${sum.new_count} 只：${(sum.new_codes||[]).join('、')}（已自动纳入，历史不足会标样本不足）`);
+  if((sum.downgraded||0)>0) notices.push(`有 ${sum.downgraded} 只估算溢价不可用，已自动降级为静态溢价并标注`);
+  if(meta.fx_available===false) notices.push('汇率历史不可用，估算溢价未包含汇率变动');
+  if(bad.length) notices.push(`${bad.length} 条数据链路已降级：${bad.join('、')}。点「数据源状态」看每一层的命中情况。`);
+  document.getElementById('notice').innerHTML=notices.map(n=>n.startsWith('<div')?n:`<div class="notice">${n}</div>`).join('');
+  document.getElementById('footer').innerHTML=
+    `主口径：${meta.primary_kind||'估算溢价'}　生成时间：${meta.generated_at||'—'}（北京时间）　净值日期样本：${(meta.nav_date_sample||[]).join(' / ')||'—'}<br>`+
+    '静态溢价＝场内价/最近披露净值−1；估算溢价＝场内价/估算净值−1，估算净值＝披露净值×基准(价格对应美股日)/基准(净值对应美股日)。净值日取不晚于它的最近美股收盘、价格日取严格早于它的最近美股收盘；两者同一天时估算＝静态，只有净值真正滞后才补偿指数与汇率涨跌。估算失败自动降级静态并标注。<br>'+
+    '跟踪度：年化跟踪误差 TE、年化跟踪偏离 TD、R²，基准为美元指数×汇率（美元份额用美元指数）。场外按净值申赎、无溢价。<br>'+
+    `更新：${meta.schedule||'每天北京时间 21:00 自动刷新'}。四层数据源互备（Worker / 直连 / AKShare / 上次快照），仓库每次只保留一份产物。<br>`+
+    (meta.disclaimer||'仅供数据观察与学习，不构成任何投资建议。');
+}
+function renderSources(){
+  const chains=ST.chains||{}, layers=ST.layers||{};
+  let h='<div style="font-weight:600;margin-bottom:6px">数据源健康 · 四层降级链</div>';
+  h+='<div class="small" style="margin-bottom:8px">'+Object.entries(layers).map(([k,v])=>`${k} ${v}`).join('　|　')+'</div>';
+  h+='<table><thead><tr><th>链路</th><th>本次命中</th><th>降级过程</th></tr></thead><tbody>';
+  for(const [k,v] of Object.entries(chains)){
+    const at=(v.attempts||[]).map(a=>`${a.source} ${a.ok?'✓':'✗'} <span class="small">${a.detail||''}</span>`).join(' → ');
+    h+=`<tr><td>${k}</td><td><span class="tag ${v.failed?'bad':'ok'}">${v.failed?'全部失败':' '+v.active}</span></td><td class="small">${at}</td></tr>`;
+  }
+  h+='</tbody></table>';
+  const q=ST.quiet_hits||{};
+  if(Object.keys(q).length){
+    h+='<div class="small" style="margin-top:8px">逐代码历史补数命中：<br>'+Object.entries(q).map(([k,v])=>`${k}：${Object.entries(v).map(([a,b])=>a+' '+b).join('，')}`).join('<br>')+'</div>';
+  }
+  h+=`<div class="small" style="margin-top:8px">Worker 可达：${ST.worker_reachable===true?'是':(ST.worker_reachable===false?'否（已自动走直连源）':'未探测')}　·　Worker 溢价交叉校验：${(ST.crosscheck||{}).worker_premium_rows||0} 行　·　核心降级 ${(ST.degraded_chains||[]).length} 条　·　辅助降级 ${(ST.optional_degraded||[]).length} 条（已有等价替代源覆盖）</div>`;
+  if((ST.warnings||[]).length) h+='<div class="notice" style="margin-top:8px">'+(ST.warnings||[]).join('<br>')+'</div>';
+  const p=document.getElementById('srcPanel'); p.innerHTML=h;
+}
+const COLS=[
+ ['code','代码','l',r=>r.code],
+ ['name','名称','l',r=>`<span title="${r.name}">${r.name.length>20?r.name.slice(0,20)+'…':r.name}</span>`],
+ ['index_key','指数','l',r=>idxName(r.index_key)],
+ ['venue','场所','l',r=>venueName(r.venue)],
+ ['currency','份额','l',r=>`${r.currency}${r.share_class||''}`],
+ ['price','现价','r',r=>fm(r.price,4)],
+ ['nav','净值(日期)','r',r=>r.nav?`${fm(r.nav,4)}<div class="small">${r.nav_date||'—'}</div>`:'—'],
+ ['est_nav','估算净值','r',r=>fm(r.est_nav,4)],
+ ['primary','主溢价','r',r=>pct(pr(r))],
+ ['static','静态','r',r=>pct(r.static)],
+ ['iopv_premium','IOPV参考','r',r=>pct(r.iopv_premium)],
+ ['scale_yi','规模(亿)','r',r=>fm(r.scale_yi,1)],
+ ['amount_yi','成交(亿)','r',r=>fm(r.amount_yi,2)],
+ ['te','TE%','r',r=>fm(r.te,2)],
+ ['td','TD%','r',r=>fm(r.td,2)],
+ ['r2','R²','r',r=>fm(r.r2,3)],
+ ['premium_noise','溢价扰动','r',r=>fm(r.premium_noise,2)],
+ ['score','评分','r',r=>{const s=weightedScore(r);return s===null?'—':s.toFixed(1)}],
+ ['purchase_status','申购','l',r=>{const p=r.purchase_status||'—';return `<span class="tag ${/暂停|限/.test(p)?'warn':''}">${p}</span>`}],
+ ['quality','口径','l',r=>{const q=r.quality||'';return `<span class="tag ${r.downgraded?'bad':(q==='存疑'?'warn':'ok')}" title="${(r.doubt||'').replace(/"/g,'')}">${r.downgraded?'静态降级':(q||'正常')}</span>`}]
+];
+function visibleRows(){
+  let out=ROWS.filter(r=>{
+    if(S.index&&r.index_key!==S.index)return false;
+    if(S.venue==='ON'&&!(r.venue==='ETF'||r.venue==='LOF'))return false;
+    if(S.venue==='OFF'&&r.venue!=='OTC')return false;
+    if(S.search){const q=S.search.toLowerCase();if(!((r.code||'').includes(q)||(r.name||'').toLowerCase().includes(q)))return false;}
+    return true;
+  });
+  const key=r=>val(r,S.sort);
+  out.sort((a,b)=>{
+    let x=key(a),y=key(b);
+    if(x===null||x===undefined)return 1; if(y===null||y===undefined)return -1;
+    if(typeof x==='string')return S.dir==='asc'?x.localeCompare(y):y.localeCompare(x);
+    return S.dir==='asc'?x-y:y-x;
+  });
+  return out;
+}
+function renderTable(){
+  const all=visibleRows();
+  let rows=all, groups=null;
+  if(S.fold){
+    const g=new Map(); all.forEach(r=>{const k=r.primary_code||r.code;if(!g.has(k))g.set(k,[]);g.get(k).push(r)});
+    rows=[];groups=g;
+    g.forEach((list,k)=>{const main=list.find(r=>r.code===k)||list[0];rows.push({__group:k,__list:list,__main:main,__count:list.length})});
+  }
+  let html='<thead><tr>'+COLS.map(c=>`<th class="${c[2]}" data-k="${c[0]}">${c[1]}</th>`).join('')+'</tr></thead><tbody>';
+  const line=r=>'<tr>'+COLS.map(c=>`<td class="${c[2]}">${c[3](r)}</td>`).join('')+'</tr>';
+  if(!S.fold){ html+=rows.map(line).join(''); }
+  else{
+    rows.forEach(g=>{
+      const open=!!S.expanded[g.__group];
+      html+=`<tr class="grp"><td colspan="${COLS.length}" class="l">主代码 ${g.__group} · ${g.__count} 个份额 <button class="chip" data-grp="${g.__group}">${open?'收起':'展开 +'+(g.__count-1)}</button></td></tr>`;
+      html+=line(g.__main);
+      if(open) g.__list.filter(r=>r!==g.__main).forEach(r=>{html+=line(r)});
+    });
+  }
+  html+='</tbody>';
+  document.getElementById('tbl').innerHTML=html;
+  document.getElementById('tblInfo').textContent=`显示 ${all.length} / ${ROWS.length} 只代码`+(S.fold?` · 折叠为 ${rows.length} 组`:'');
+  document.querySelectorAll('#tbl button[data-grp]').forEach(b=>b.onclick=()=>{const k=b.dataset.grp;S.expanded[k]=!S.expanded[k];renderTable()});
+  document.querySelectorAll('#tbl th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(S.sort===k)S.dir=S.dir==='desc'?'asc':'desc';else{S.sort=k;S.dir='desc'}document.getElementById('selSort').value=(['primary','static','te','scale_yi','amount_yi','score','code'].includes(k)?k:'primary');document.getElementById('btnDir').dataset.dir=S.dir;document.getElementById('btnDir').textContent=S.dir==='desc'?'降序 ↓':'升序 ↑';renderTable()});
+  renderScatter(all);
+}
+function renderScatter(rows){
+  const svg=document.getElementById('scatter');
+  const pts=rows.filter(r=>r.te!==null&&r.te!==undefined&&pr(r)!==null&&pr(r)!==undefined&&(r.venue==='ETF'||r.venue==='LOF'));
+  if(pts.length<2){svg.innerHTML='<text x="20" y="30" fill="#6b7484" font-size="13">数据积累中，暂无足够点绘制散点图</text>';return}
+  const W2=900,H=260,L=54,R=18,T=14,B=34;
+  const xs=pts.map(r=>r.te),ys=pts.map(r=>pr(r));
+  const xmax=Math.max(...xs,1)*1.05, xmin=0;
+  const ymin=Math.min(...ys,0)-1, ymax=Math.max(...ys,0)+1;
+  const X=v=>L+(v-xmin)/(xmax-xmin)*(W2-L-R), Y=v=>T+(ymax-v)/(ymax-ymin)*(H-T-B);
+  let s=`<rect x="${L}" y="${T}" width="${W2-L-R}" height="${H-T-B}" fill="#fbfcfe" stroke="#e3e6eb"/>`;
+  const goodX=X(Math.min(xmax*0.35,xmax)),goodY=Y(Math.min(ymax,ymin+(ymax-ymin)*0.35));
+  s+=`<rect x="${L}" y="${T}" width="${goodX-L}" height="${goodY-T}" fill="#e6f5ee" stroke="#0f8a5f" stroke-dasharray="4 3" opacity="0.6"/>`;
+  for(let i=0;i<=4;i++){const v=ymin+(ymax-ymin)*i/4;const y=Y(v);s+=`<line x1="${L}" y1="${y}" x2="${W2-R}" y2="${y}" stroke="#eef1f5"/><text x="${L-6}" y="${y+4}" text-anchor="end" font-size="11" fill="#6b7484">${v.toFixed(1)}%</text>`}
+  for(let i=0;i<=4;i++){const v=xmin+(xmax-xmin)*i/4;const x=X(v);s+=`<line x1="${x}" y1="${T}" x2="${x}" y2="${H-B}" stroke="#eef1f5"/><text x="${x}" y="${H-B+16}" text-anchor="middle" font-size="11" fill="#6b7484">${v.toFixed(1)}</text>`}
+  if(ymin<0&&ymax>0){const y=Y(0);s+=`<line x1="${L}" y1="${y}" x2="${W2-R}" y2="${y}" stroke="#b9c2cf" stroke-width="1"/>`}
+  pts.forEach(r=>{const c=r.index_key==='SP500'?'#185fa5':'#6a4fb3';s+=`<circle cx="${X(r.te)}" cy="${Y(pr(r))}" r="4.5" fill="${c}" opacity="0.78"><title>${r.code} ${r.name}｜TE ${r.te.toFixed(2)}%｜溢价 ${pr(r).toFixed(2)}%</title></circle>`});
+  s+=`<text x="${W2-R}" y="${H-4}" text-anchor="end" font-size="11" fill="#6b7484">TE (%) →</text>`;
+  svg.innerHTML=s;
+}
+
+/* ---------------- 浏览器内规则引擎（本地版 Python 引擎的等价移植） -------------- */
+const IDX={SP500:'标普500',NDX100:'纳指100'}, VEN={ETF:'ETF',LOF:'LOF',OTC:'场外'};
+const nf=(v,d=2,s='')=>(v===null||v===undefined||v==='')?'—':(typeof v==='number'?v.toFixed(d)+s:String(v)+s);
+const sn=(n,k=18)=>!n?'':(n.length>k?n.slice(0,k)+'…':n);
+function tableFor(items,kind){
+  let cols,rows;
+  if(kind==='premium'){
+    cols=['代码','名称','指数','场所','主溢价%','静态%','估算净值','规模(亿)','申购','口径'];
+    rows=items.map(r=>[r.code,sn(r.name),IDX[r.index_key]||r.index_key,VEN[r.venue]||r.venue,
+      nf(val(r,'primary')),nf(r.static),nf(r.est_nav,4),nf(r.scale_yi,1),r.purchase_status||'—',
+      r.downgraded?'静态降级':(r.quality==='存疑'?'存疑':'估算')]);
+  }else if(kind==='tracking'){
+    cols=['代码','名称','指数','TE%','TD%','R²','样本','溢价扰动','状态'];
+    rows=items.map(r=>[r.code,sn(r.name),IDX[r.index_key]||r.index_key,nf(r.te),nf(r.td),
+      nf(r.r2,3),r.te_n||'—',nf(r.premium_noise),r.te_status||'—']);
+  }else if(kind==='scale'){
+    cols=['代码','名称','指数','场所','规模(亿)','规模口径','报告期','成交额(亿)','评分'];
+    rows=items.map(r=>[r.code,sn(r.name),IDX[r.index_key]||r.index_key,VEN[r.venue]||r.venue,
+      nf(r.scale_yi,1),r.scale_source||'—',r.scale_date||'—',nf(r.amount_yi),nf(r.score,1)]);
+  }else{
+    cols=['代码','名称','指数','主溢价%','TE%','规模(亿)','评分'];
+    rows=items.map(r=>[r.code,sn(r.name),IDX[r.index_key]||r.index_key,nf(val(r,'primary')),
+      nf(r.te),nf(r.scale_yi,1),nf(r.score,1)]);
+  }
+  return {columns:cols,rows:rows};
+}
+function findCode(q){
+  const m=q.match(/(?<!\d)(\d{6})(?!\d)/);
+  if(m){const h=ROWS.find(r=>r.code===m[1]);if(h)return h;}
+  for(const r of ROWS){
+    const frag=(r.name||'').replace(/ETF|LOF|QDII|联接|指数|基金|\(.*?\)|（.*?）/g,'');
+    if(frag.length>=3&&q.includes(frag))return r;
+  }
+  return null;
+}
+function applyFilters(q){
+  let out=ROWS.slice();
+  if(/标普|s&p|sp500|标准普尔/i.test(q)&&!/纳斯达克|纳指/.test(q)) out=out.filter(r=>r.index_key==='SP500');
+  else if(/纳指|纳斯达克|ndx/i.test(q)) out=out.filter(r=>r.index_key==='NDX100');
+  if(/场内|etf|lof/i.test(q)&&!/场外/.test(q)) out=out.filter(r=>r.venue==='ETF'||r.venue==='LOF');
+  else if(/场外|联接/.test(q)) out=out.filter(r=>r.venue==='OTC');
+  if(/美元/.test(q)) out=out.filter(r=>r.currency==='USD');
+  else if(/人民币/.test(q)) out=out.filter(r=>r.currency==='CNY');
+  let m=q.match(/规模\s*(?:大于|超过|>)\s*([\d.]+)\s*亿/);
+  if(m) out=out.filter(r=>r.scale_yi!==null&&r.scale_yi>+m[1]);
+  m=q.match(/溢价\s*(?:小于|低于|<)\s*([\d.]+)/);
+  if(m) out=out.filter(r=>val(r,'primary')!==null&&val(r,'primary')<+m[1]);
+  m=q.match(/溢价\s*(?:大于|超过|>)\s*([\d.]+)/);
+  if(m) out=out.filter(r=>val(r,'primary')!==null&&val(r,'primary')>+m[1]);
+  if(/限购|暂停申购|买不了|能买/.test(q)) out=out.filter(r=>/暂停|限/.test(r.purchase_status||''));
+  return out;
+}
+function topN(q){
+  const m=q.match(/(?:前|top\s*)(\d+)|(\d+)\s*只/i);
+  return m?Math.min(+(m[1]||m[2]),30):8;
+}
+function explainRow(r){
+  const L=[`${r.code} ${r.name}（${IDX[r.index_key]||''} · ${VEN[r.venue]||''}）`];
+  if(r.price!==null&&r.price!==undefined){
+    const gap=(val(r,'primary')!==null&&r.static!==null)?val(r,'primary')-r.static:null;
+    const peers=ROWS.filter(x=>x.index_key===r.index_key&&val(x,'primary')!==null).map(x=>val(x,'primary')).sort((a,b)=>a-b);
+    const med=peers.length?peers[Math.floor(peers.length/2)]:null;
+    L.push(`现价 ${r.price.toFixed(4)}，最新披露净值 ${nf(r.nav,4)}（净值日 ${r.nav_date||'—'}）。`);
+    L.push(`估算净值 ${nf(r.est_nav,4)}：净值对应美股收盘 ${r.us_nav_session||'—'}，估值时点 ${r.us_price_session||'—'}，指数×汇率放大 ${nf(r.est_ratio,4)} 倍。`);
+    L.push(`估算溢价 ${nf(val(r,'primary'),2,'%')}，静态溢价 ${nf(r.static,2,'%')}；两者差 ${nf(gap===null?null:Math.abs(gap),2,'pp')}。`);
+    if(gap!==null&&Math.abs(gap)>0.05) L.push('差额来自净值披露滞后期间的指数与汇率涨跌，属于被静态口径虚增的部分，估算口径已剔除。');
+    else L.push('两者一致：净值日与价格日对应同一美股收盘，估算净值无需调整。因此这个溢价是真实的场内溢价，不是净值滞后造成的虚高。');
+    if(med!==null) L.push(`同指数溢价中位数 ${med.toFixed(2)}%，本基金${val(r,'primary')>med?'高于':'低于'}中位数 ${Math.abs(val(r,'primary')-med).toFixed(2)}pp。`);
+  }else L.push('这是场外份额，按净值申赎、本身没有溢价。');
+  L.push(`申购状态 ${r.purchase_status||'—'}`+(r.limit_amount?`，日累计限额 ${(+r.limit_amount).toFixed(0)} 元`:'')+'；QDII 额度受限、暂停申购时，场内买盘容易把价格推高，是溢价的主要成因。');
+  L.push(`规模 ${nf(r.scale_yi,1,' 亿')}（${r.scale_source||'—'}），成交额 ${nf(r.amount_yi,2,' 亿')}，年化跟踪误差 ${nf(r.te,2,'%')}，综合评分 ${nf(r.score,1)}。`);
+  if(r.doubt) L.push(`口径提示：${r.doubt}。`);
+  return L.join('\n');
+}
+function answer(q){
+  q=(q||'').trim();
+  if(!q) return {reply:'直接问就行，例如「今天溢价最高的 5 只」。',table:null,action:null};
+  if(/刷新|更新数据|重新拉|重新抓/.test(q)) return {reply:'线上版不需要手动刷新：每天北京时间 21:00 自动跑一次，21:30 与 23:00 只在未成功时补跑。页面数据日 '+(meta.price_date||'—')+'，生成时间 '+(meta.generated_at||'—')+'。',table:null,action:null};
+  if(/导出|下载|csv/i.test(q)) return {reply:'正在生成 ranking.csv（含全部代码与三层溢价、跟踪度、规模、评分）。',table:null,action:'export'};
+  if(/帮助|能问什么|怎么问|示例/.test(q)) return {reply:'可以问：今天溢价最高的 5 只 / 标普500 里跟踪误差最小 / 规模大于50亿且溢价低于3% / 哪些基金暂停申购 / 这次新增了哪些基金 / 513100 为什么溢价高 / 溢价怎么算的 / 场外替代有哪些 / 数据源怎么样。',table:null,action:null};
+  if(/数据源|降级|多重|worker|兜底|稳定/.test(q)){
+    const ch=ST.chains||{},bad=ST.degraded_chains||[];
+    const lines=Object.entries(ch).map(([k,v])=>`${k}：${v.failed?'全部失败':v.active}`);
+    return {reply:'四层数据源：L0 a-stock-api Worker、L1 东财/腾讯/新浪直连、L2 AKShare、L3 上次成功快照。\n本次命中：\n'+lines.join('\n')+`\n降级 ${bad.length} 条；Worker ${ST.worker_reachable===true?'可达':'不可达（已自动走直连）'}。点页面上方「数据源状态」可看完整降级过程。`,table:null,action:null};
+  }
+  if(/口径|怎么算|估算溢价|静态溢价|净值滞后|为什么有两个溢价/.test(q))
+    return {reply:'静态溢价 = 场内价 / 最近披露单位净值 − 1。QDII 净值 T+1/T+2 才披露，所以这个口径把隔夜美股涨幅也算进了溢价。\n'
+      +'估算溢价（主口径）= 场内价 / 估算净值 − 1；估算净值 = 披露净值 × 基准(价格对应美股日) / 基准(净值对应美股日)，基准 = 美元指数 × USD/CNY。\n'
+      +'净值日取不晚于它的最近美股收盘，价格日取严格早于它的最近美股收盘（A股收盘时美股当天还没开盘）。两者落在同一美股日时放大系数为 1、估算溢价等于静态溢价；只有净值披露真正滞后时才补偿滞后期内的指数与汇率涨跌。'
+      +'估算所需数据缺失、净值日期过旧或结果异常时，自动降级静态溢价并标注，绝不拿滞后净值冒充实时估值。'
+      +`\n本次净值日期样本：${(meta.nav_date_sample||[]).join(', ')}；价格日期 ${meta.price_date||'—'}。`,table:null,action:null};
+  if(/新增|新基金|新加入|名单变化|退市/.test(q)){
+    const codes=sum.new_codes||[];
+    if(codes.length){const hit=ROWS.filter(r=>codes.includes(r.code));return {reply:`本次自动发现新增 ${codes.length} 只：${codes.join(', ')}。已自动纳入，历史不足的会标「样本不足」。消失 ${sum.gone_count||0} 只。`,table:tableFor(hit,'premium'),action:null};}
+    return {reply:`本次没有新增。当前池内 ${sum.total||ROWS.length} 只代码，每天自动重新扫描全量名录并纳入新基金；消失 ${sum.gone_count||0} 只。`,table:null,action:null};
+  }
+  if(/多少只|几个|统计|概况|规模总/.test(q))
+    return {reply:`池内共 ${sum.total||ROWS.length} 只代码：标普500 ${sum.sp500||0} 只、纳指100 ${sum.ndx100||0} 只；场内 ${sum.on_exchange||0} 只、场外 ${sum.off_exchange||0} 只。跟踪度有效 ${sum.te_ok||0} 只，估算降级 ${sum.downgraded||0} 只，口径存疑 ${sum.doubt||0} 只。数据日 ${meta.price_date||'—'}。`,table:null,action:null};
+  if(/替代|场外买|不买场内|溢价太高怎么办/.test(q)&&!/\d{6}/.test(q)){
+    let off=ROWS.filter(r=>r.venue==='OTC'&&r.currency==='CNY');
+    off.sort((a,b)=>((/开放申购/.test(a.purchase_status||''))?0:1)-((/开放申购/.test(b.purchase_status||''))?0:1)||(b.scale_yi||0)-(a.scale_yi||0));
+    return {reply:'场外份额按净值申赎、没有溢价，但 QDII 常见暂停申购/限大额，且确认通常 T+2。下面按「可申购优先、规模大」列出人民币场外份额；想看某只场内基金对应的家族，直接问「513100 场外替代」。',table:tableFor(off.slice(0,12),'scale'),action:null};
+  }
+  const hit=findCode(q);
+  if(hit&&/替代|场外买|不买场内|换一只/.test(q)){
+    const fam=ROWS.filter(r=>r.family===hit.family);
+    return {reply:`${hit.code} 所属家族「${hit.family}」共 ${fam.length} 个代码。场外份额按净值申赎、没有溢价，但要留意申购状态与确认时间（QDII 通常 T+2）。`,table:tableFor(fam,'scale'),action:null};
+  }
+  if(hit) return {reply:explainRow(hit),table:null,action:null};
+
+  let dim='primary',label='主溢价';
+  if(/跟踪|误差|贴合|te\b|跟踪度/i.test(q)){dim='te';label='年化跟踪误差';}
+  else if(/规模|体量/.test(q)){dim='scale_yi';label='规模';}
+  else if(/成交|流动性|换手/.test(q)){dim='amount_yi';label='成交额';}
+  else if(/评分|综合|推荐|最优|最好/.test(q)){dim='score';label='综合评分';}
+  let asc=/最低|最小|最便宜|折价|最贴合|误差最小|最好|最优|推荐/.test(q);
+  if(dim==='scale_yi'||dim==='amount_yi'||dim==='score') asc=false;
+  if(/最高|最大|最贵|最差|高溢价/.test(q)) asc=false;
+  if(/折价|最低|最小|最便宜/.test(q)&&dim==='primary') asc=true;
+  const n=topN(q);
+  let items=applyFilters(q).filter(r=>val(r,dim)!==null&&val(r,dim)!==undefined);
+  items.sort((a,b)=>asc?val(a,dim)-val(b,dim):val(b,dim)-val(a,dim));
+  items=items.slice(0,n);
+  if(!items.length){
+    const ps=ROWS.map(r=>val(r,'primary')).filter(v=>v!==null&&v!==undefined);
+    const hint=ps.length?`当前场内溢价区间 ${Math.min(...ps).toFixed(1)}%~${Math.max(...ps).toFixed(1)}%。`:'';
+    return {reply:hint+'按这个条件没筛到数据，可以放宽阈值，或换问「今天溢价最高的 5 只」。',table:null,action:null};
+  }
+  const kind=dim==='primary'?'premium':(dim==='te'?'tracking':(dim==='scale_yi'?'scale':'score'));
+  const dir=asc?'由低到高':'由高到低';
+  let extra='';
+  if(dim==='primary'){const hi=val(items[0],'primary');extra=` 当前${asc?'最低':'最高'} ${hi.toFixed(2)}%。 红色为溢价、绿色为折价；净值日期与口径见每行的口径标签。`;}
+  if(/限购|暂停申购|买不了|能买/.test(q)) return {reply:`以下 ${items.length} 只处于暂停申购或限大额状态，按${label}${dir}排列。QDII 额度受限时场外申购受阻，买盘挤到场内，往往就是溢价居高不下的原因。`,table:tableFor(items,kind),action:null};
+  return {reply:`按${label}${dir}列出 ${items.length} 只。${extra}`,table:tableFor(items,kind),action:null};
+}
+
+function addMsg(cls,text,table){
+  const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;
+  if(table&&table.rows.length){const t=document.createElement('table');t.innerHTML='<thead><tr>'+table.columns.map(c=>`<th>${c}</th>`).join('')+'</tr></thead><tbody>'+table.rows.map(r=>'<tr>'+r.map(v=>`<td>${v}</td>`).join('')+'</tr>').join('')+'</tbody>';d.appendChild(t)}
+  document.getElementById('msgs').appendChild(d);document.getElementById('msgs').scrollTop=1e9;
+}
+function ask(q){
+  addMsg('u',q);
+  const a=answer(q);
+  addMsg('a',a.reply||'（无回答）',a.table);
+  if(a.action==='export')document.getElementById('btnCsv').click();
+}
+function csvDownload(){
+  const cols=['code','name','index_key','venue','currency','share_class','primary_code','price','nav','nav_date','est_nav','static','estimated','primary','premium_kind','scale_yi','amount_yi','te','td','r2','purchase_status','score'];
+  const csv=[cols.join(',')].concat(ROWS.map(r=>cols.map(c=>`"${(r[c]===null||r[c]===undefined?'':r[c])}"`).join(','))).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download='qdii_ranking.csv';a.click();
+}
+function bind(){
+  document.getElementById('selIndex').onchange=e=>{S.index=e.target.value;renderTable()};
+  document.getElementById('selVenue').onchange=e=>{S.venue=e.target.value;renderTable()};
+  document.getElementById('selKind').onchange=e=>{S.kind=e.target.value;fillKpis();renderTable()};
+  document.getElementById('selSort').onchange=e=>{S.sort=e.target.value;renderTable()};
+  document.getElementById('btnDir').onclick=e=>{S.dir=S.dir==='desc'?'asc':'desc';e.target.dataset.dir=S.dir;e.target.textContent=S.dir==='desc'?'降序 ↓':'升序 ↑';renderTable()};
+  document.getElementById('ckFold').onchange=e=>{S.fold=e.target.checked;S.expanded={};renderTable()};
+  document.getElementById('txtSearch').oninput=e=>{S.search=e.target.value.trim();renderTable()};
+  ['w1','w2','w3','w4'].forEach((id,i)=>{document.getElementById(id).value=(meta.weights?[meta.weights.premium,meta.weights.tracking,meta.weights.scale,meta.weights.liquidity][i]:W[i]);document.getElementById(id).oninput=renderTable});
+  document.getElementById('btnSrc').onclick=()=>{const p=document.getElementById('srcPanel');const show=p.style.display!=='block';p.style.display=show?'block':'none';if(show)renderSources()};
+  document.getElementById('btnCsv').onclick=csvDownload;
+  const chips=['今天溢价最高的 5 只','标普500 里跟踪误差最小','规模大于50亿且溢价低于3%','哪些基金暂停申购','这次新增了哪些基金','513100 为什么溢价高','溢价怎么算的','场外替代有哪些','数据源怎么样'];
+  document.getElementById('chips').innerHTML=chips.map(c=>`<span class="chip" data-q="${c}">${c}</span>`).join('');
+  document.querySelectorAll('#chips .chip').forEach(el=>el.onclick=()=>ask(el.dataset.q));
+  document.getElementById('btnAsk').onclick=()=>{const i=document.getElementById('txtAsk');const q=i.value.trim();i.value='';if(q)ask(q)};
+  document.getElementById('txtAsk').onkeydown=e=>{if(e.key==='Enter')document.getElementById('btnAsk').click()};
+}
+fillKpis();bind();renderTable();
+addMsg('a','已就绪。数据日 '+(meta.price_date||'—')+'，池内 '+(sum.total||ROWS.length)+' 只代码。问答完全在浏览器内运行，不联网也不调用大模型；可以直接问溢价、跟踪度、规模、限购、口径与数据源状态。');
+if((sum.new_count||0)>0)addMsg('a',`本次自动发现新增 ${sum.new_count} 只：${(sum.new_codes||[]).join('、')}`);
+if(meta.stale)addMsg('a','⚠ 当前是上一次成功快照（所有实时源本次均未取到），请勿据此做当日判断。');
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+{
+  "premium_primary": "estimated",
+  "fallback_to_static": true,
+  "fallback_max_nav_age_days": 7,
+  "index_patterns": {
+    "SP500": "标普\\s*500|标准普尔\\s*500|S\\s*&?\\s*P\\s*500|SP\\s*500|标普500",
+    "NDX100": "纳斯达克\\s*100|纳指\\s*100|NASDAQ\\s*100|纳斯达克|纳指"
+  },
+  "exclude_pattern": "科技|生物|油气|消费|医疗|信息科技|REIT|增强|优选|主动|FOF|等权|低波|红利|全球|精选|量化|策略|中国|香港|港股|A股|石油|天然气|中小盘|美国股票",
+  "fund_type_pattern": "海外|QDII|指数型-海外",
+  "weights": {
+    "premium": 0.4,
+    "tracking": 0.3,
+    "scale": 0.15,
+    "liquidity": 0.15
+  },
+  "te_window": 250,
+  "min_te_samples": 60,
+  "outlier_static_gap_pp": 6.0,
+  "outlier_peer_gap_pp": 10.0,
+  "index_symbols_sina": {
+    "SP500": ".INX",
+    "NDX100": ".NDX"
+  },
+  "index_secids_em": {
+    "SP500": "100.SPX",
+    "NDX100": "100.NDX100"
+  },
+  "worker_base": "https://a-stock-api.wj4020410.workers.dev",
+  "worker_enabled": true,
+  "worker_timeout_sec": 20,
+  "worker_batch_size": 30,
+  "http_timeout_sec": 20,
+  "http_retries": 1,
+  "nav_history_refresh_days": 7,
+  "history_workers": 6,
+  "history_timeout_sec": 40,
+  "history_keep": 320,
+  "premium_history_keep_days": 400,
+  "scale_cache_days": 30,
+  "size_limit_mb": 500,
+  "timezone_offset_hours": 8,
+  "scope": "标普500 / 纳斯达克100 宽基被动基金（国内）",
+  "disclaimer": "仅供数据观察与学习，不构成任何投资建议"
+}

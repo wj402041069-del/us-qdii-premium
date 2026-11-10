@@ -1,0 +1,68 @@
+name: 每日刷新 QDII 溢价与跟踪度
+
+# 北京时间 = UTC+8，中国不实行夏令时，全年固定。
+#   0 13 * * *  -> 21:00 北京时间（主跑）
+#  30 13 * * *  -> 21:30 北京时间（仅当主跑未成功时补跑）
+#   0 15 * * *  -> 23:00 北京时间（最后一道补跑）
+# 补跑由 tools/gate.py 判断是否当天已成功产出，成功则直接跳过，
+# 因此「一天只成功刷新一次」，同时又能自愈 GitHub 偶发漏跑/上游抖动。
+on:
+  schedule:
+    - cron: '0 13 * * *'
+    - cron: '30 13 * * *'
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: qdii-daily
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 准备 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --disable-pip-version-check -q --upgrade pip
+          python -m pip install --disable-pip-version-check -q -r requirements.txt
+
+      - name: 回读上一次成功产物（历史序列 / 名单台账 / 兜底快照）
+        run: python tools/load_state.py
+
+      - name: 判断是否需要刷新
+        id: gate
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        run: echo "run=$(python tools/gate.py prev/meta.json)" >> "$GITHUB_OUTPUT"
+
+      - name: 采集 + 计算 + 生成静态页
+        if: steps.gate.outputs.run == 'true'
+        run: python refresh.py
+
+      - name: 清理运行垃圾并检查 500MB 上限
+        if: steps.gate.outputs.run == 'true'
+        run: python cleanup.py --limit-mb 500
+
+      - name: 发布到 gh-pages（孤立单提交 + 强推）
+        if: steps.gate.outputs.run == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: bash tools/deploy.sh
