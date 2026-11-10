@@ -163,9 +163,10 @@ function fillKpis(){
   const core=Object.values(chains).filter(v=>!v.optional);
   const total=core.length;
   document.getElementById('badgeSrc').textContent=`核心源 ${total-bad.length}/${total} 正常`+(opt.length?` · 辅助降级 ${opt.length}`:'');
-  document.getElementById('badgeSrc').className='badge '+(bad.length?'w':'g');
+  document.getElementById('badgeSrc').className='badge '+(meta.stale?'w':(bad.length?'w':'g'));
+  if(meta.stale) document.getElementById('badgeSrc').textContent='⚠ 数据陈旧';
   const notices=[];
-  if(meta.stale) notices.push(`<div class="notice err">⚠ 本次所有实时数据源均未取到，页面展示的是上一次成功快照（${meta.price_date||'—'}）。原因：${meta.stale_reason||'上游不可用'}。系统会在下一次补跑自动修复。</div>`);
+  if(meta.stale) notices.push(`<div class="notice err">⚠ 数据陈旧：本次所有实时数据源均未取到，页面展示的是上一次成功快照（${meta.price_date||'—'}）。原因：${meta.stale_reason||'上游不可用'}。系统会在下一次补跑自动修复，请勿据此做当日判断。</div>`);
   if((sum.new_count||0)>0) notices.push(`本次自动新增 ${sum.new_count} 只：${(sum.new_codes||[]).join('、')}（已自动纳入，历史不足会标样本不足）`);
   if((sum.downgraded||0)>0) notices.push(`有 ${sum.downgraded} 只估算溢价不可用，已自动降级为静态溢价并标注`);
   if(meta.fx_available===false) notices.push('汇率历史不可用，估算溢价未包含汇率变动');
