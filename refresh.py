@@ -413,9 +413,11 @@ def build_rows(rows: list, data: dict, cfg: dict, state: dict) -> list:
             price = _f(wp.get("price"))
         if price is not None and bid is None:
             bid = ask = None
-        if price is None:
+        # 上次快照的价格/成交额只对场内份额有意义。场外按净值申赎、不该有场内价；
+        # 若上一版快照被污染（例如场外代码被当 A 股股票取过价），这里会把错价继承下来。
+        if price is None and r["venue"] in ("ETF", "LOF"):
             price = _f(_seed(code, "price"))
-        if amount is None:
+        if amount is None and r["venue"] in ("ETF", "LOF"):
             amount = (_f(_seed(code, "amount_yi")) or 0) * 1e8 or None
 
         navinfo = nav_map.get(code, {})

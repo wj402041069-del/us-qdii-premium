@@ -321,6 +321,7 @@ function renderSources(){
     h+='<div class="small" style="margin-top:8px">逐代码历史补数命中：<br>'+Object.entries(q).map(([k,v])=>`${k}：${Object.entries(v).map(([a,b])=>a+' '+b).join('，')}`).join('<br>')+'</div>';
   }
   h+=`<div class="small" style="margin-top:8px">Worker 可达：${ST.worker_reachable===true?'是':(ST.worker_reachable===false?'否（已自动走直连源）':'未探测')}　·　Worker 溢价交叉校验：${(ST.crosscheck||{}).worker_premium_rows||0} 行　·　核心降级 ${(ST.degraded_chains||[]).length} 条　·　辅助降级 ${(ST.optional_degraded||[]).length} 条（已有等价替代源覆盖）</div>`;
+  if(ST.price_fallback_used) h+='<div class="notice" style="margin-top:8px">本次东财 ETF/LOF 行情主源被限流，场内价格由腾讯批量行情兜底：只对上次已确认的场内代码请求，场外代码不参与，避免与 A 股股票代码串号。其余链路正常，数据可用。</div>';
   if((ST.warnings||[]).length) h+='<div class="notice" style="margin-top:8px">'+(ST.warnings||[]).join('<br>')+'</div>';
   const p=document.getElementById('srcPanel'); p.innerHTML=h;
 }

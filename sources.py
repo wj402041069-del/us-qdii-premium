@@ -774,6 +774,19 @@ def collect(seed: dict, fallback_codes: list | None = None) -> dict:
             else:
                 raw["ETF 行情"] = tx.reset_index(drop=True)
                 fallback_used = True
+                # 主源确实失败了，但场内价格已被兜底完整覆盖，状态面板不能
+                # 继续写「所有数据源均不可用」——那会让用户误以为数据是空的。
+                STATUS["warnings"] = [
+                    w for w in STATUS["warnings"]
+                    if not w.startswith(("ETF 行情：", "LOF 行情："))
+                ]
+                STATUS["warnings"].append(
+                    "东财 ETF / LOF 行情主源本次不可用，场内价格已由腾讯批量行情兜底完整覆盖；"
+                    "场外净值、申购状态、美股基准与汇率各自走正常链路")
+                STATUS["chains"].setdefault("ETF 行情", {}).setdefault(
+                    "attempts", []).append({
+                        "source": "→ 由腾讯行情兜底覆盖", "ok": True, "ms": 0,
+                        "detail": f"白名单内 {len(tx)} 行"})
 
     empty_spot = pd.DataFrame(columns=["代码", "名称", "最新价", "IOPV实时估值", "基金折价率",
                                        "成交额", "流通市值", "总市值", "最新份额",
@@ -806,6 +819,7 @@ def collect(seed: dict, fallback_codes: list | None = None) -> dict:
         "worker_premium": {},
         "seed": seed,
     }
+    STATUS["price_fallback_used"] = fallback_used
     STATUS["degraded_chains"] = [k for k, v in STATUS["chains"].items()
                                  if v.get("failed") and not v.get("optional")]
     STATUS["optional_degraded"] = [k for k, v in STATUS["chains"].items()
