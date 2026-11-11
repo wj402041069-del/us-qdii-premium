@@ -42,6 +42,7 @@
 | 排序 | 溢价 / 静态溢价 / 跟踪误差 / 规模 / 成交额 / 日限额 / 综合评分，可即时改评分权重；**默认按综合评分降序** |
 | 默认视图 | 工具条「排除暂停/封闭期」复选框**默认勾选**，只隐藏场外真正买不了的基金，直接在能买的里面挑评分最高的 |
 | 页面布局 | **单列全宽**，主表格、指标注释卡、溢价 × 跟踪度散点图自上而下排列；对话窗口与第二张「限额排名」表均已移除，不再占显示空间 |
+| 散点图绿框 | 「溢价 × 跟踪度分布」的绿色虚线框固定在**左下角**，绝对阈值 `主溢价 ≤2% 且 TE ≤1%`；图例实时写明「当前视图 N/M 只场内基金落入」。阈值不随行情缩放，**空框是真实结论而非 bug** |
 | 名单 | 每次自动扫描全量基金名录与场内 ETF/LOF 列表，新基金自动纳入，消失的标 delisted，人工 excluded 永久生效 |
 | 数据源健康 | 页面「数据源状态」按钮展示每条链路的命中/降级过程 |
 | 指标中文注释 | 表头 ⓘ 悬停看简注；「指标中文注释」卡片给出 TE% / TD% / R² / 溢价扰动 / 三层溢价 / 日限额 / 评分的完整中文解释（纯页面说明，不依赖问答） |
@@ -378,6 +379,17 @@ earl-etf-dashboard/
   `renderLimitRank()` / `limitCard` / `limitTbl` / `.limcard` 等已删代码，
   也不要把 `limitMatch` 改回带第二参数的双口径版本。主表排序只用 `limSort()`。
 * 「溢价 × 跟踪度分布」散点图**必须保留**，它与第二张限额表无关。
+* **散点图绿框口径（2026-11-11 修正，勿改回）**：
+  - 坐标系：横轴 TE 越大越靠右（越差），纵轴主溢价越高越靠上（越贵），
+    所以「低溢价 + 低误差」是**左下角**，不是左上角。
+  - 绿框用**绝对阈值**：`GOOD_PREM=2`（主溢价 ≤2%）、`GOOD_TE=1`（TE ≤1%），
+    写在两套模板 `renderScatter()` 开头；框从 `Y(2%)` 画到绘图区底边、`X(0)` 画到 `X(1%)`。
+  - **不要用相对分位**：旧代码 `ymin+0.35*(ymax-ymin)` 会被当日 21% 的最高溢价
+    把 35% 分位抬到 7.07%，把高溢价洗成「低溢价」；旧代码还把 `rect` 从图顶画起，
+    实际框住的是溢价最高的那 65%，与「低溢价」图例完全相反。
+  - 图例 `scatterLegend` 由 JS 写入阈值与「当前视图 N/M 只场内基金落入」，
+    N=0 时补「暂无标的进入便宜区」。空框是真实结论，不要为了好看放宽阈值或改回相对分位。
+  - `ymin=Math.min(...ys,0)-1` 里的 `-1` 只是让 0 基准线可见，不代表存在折价标的。
 
 #### 2.7 综合评分与中文注释
 
@@ -586,6 +598,8 @@ python cleanup.py --limit-mb 500
 * 必须保留：主口径切换、指数/场所/限额筛选、排序、按主代码折叠、搜索、评分权重即时调整、
   表头 ⓘ 简注、`METRIC_NOTES` 注释卡、主表「日限额」列与「按日限额」排序、
   溢价 × 跟踪度散点图、CSV 导出、涨红跌绿。
+* 散点图绿框必须按 2.6 的绝对阈值口径画在**左下角**，`scatterLegend` 写明阈值与落入数量；
+  不得恢复 `xmax*0.35` / `ymin+(ymax-ymin)*0.35` 相对分位，也不得从图顶起画。
 * **不要再出现第二张「限额排名 · 申购额度」表**：模板中不得存在
   `limitCard / limitTbl / limitInfo / selLimitStatus / selLimitRank / selLimitTop /
   ckLimitOn / txtLimitMax` 这些 id，也不得存在 `.limcard` / `renderLimitRank()` /
@@ -601,7 +615,8 @@ python cleanup.py --limit-mb 500
 * 前端验证方式见 7.2：把渲染后 HTML 的 `<script>` 抽出做 `node --check`，
   再用 Node `vm` + DOM 桩跑一遍初始化（桩给 `selSort='score'`、`ckHidePaused.checked=true`、
   `w1..w4` 默认权重），确认无异常、无对话残留、无第二张限额表残留、注释 11 行、
-  表头 ⓘ 14 个、默认可买视图 **44 行（场内 18）**、取消排除后 94 行、散点图 SVG 非空。
+  表头 ⓘ 14 个、默认可买视图 **44 行（场内 18）**、取消排除后 94 行、散点图 SVG 非空、
+  绿框在左下角（底边贴绘图区下沿）且图例含 `≤2% / ≤1%` 与落入数量。
 
 ---
 
@@ -630,7 +645,10 @@ limSortRank / limcard` 残留**（第二张表已删除）、注释卡片 11 个
 可见 44 行（场内 18）、表格 44 行、取消排除后 94 行、`tblInfo` 含「已排除场外暂停」**；
 主表筛选（桩内临时关闭默认排除再测）`不限=94 / le10=37 / le100=48 / ge10000=2 /
 paused=56 / limited=82 / open=14`、`COLS` 含 `limit_amount`、
-`renderScatter()` 生成的 SVG 非空（散点图保留）。
+`renderScatter()` 生成的 SVG 非空（散点图保留）；绿框 `rect` 的
+`y≈197.5 / height≈28.5 / 底边=226`（**左下角**，随行情小幅变化）、
+图例含 `≤2% / ≤1%` 与「当前视图 0/18 只场内基金落入」，
+且脚本里没有 `xmax*0.35` / `goodY=Y` 旧代码。
 
 > `prev/` 是**本地验证资产**，被 `.gitignore` 忽略、不会出现在 GitHub 仓库里。
 > `prev/check_pages.js` 现在直接读取渲染后的 `dist/index.html` 与 `../us-qdii-monitor/dashboard.html`
@@ -668,9 +686,11 @@ python cleanup.py --limit-mb 500
 
 * GitHub Actions 最近一次 `每日刷新 QDII 溢价与跟踪度` = `success`，pages build = `success`。
 * Pages（带 `?v=<时间戳>`）：`index.html` 200 且含「指标中文注释 / 溢价 × 跟踪度分布 /
-  `id="scatter"` / 日限额 / `<option value="score" selected>` / `ckHidePaused` checked」；
+  `id="scatter"` / `左下＝低溢价且跟踪好` / `id="scatterLegend"` / `≤2%` / `≤1%` /
+  日限额 / `<option value="score" selected>` / `ckHidePaused` checked」；
   **不含** `id="limitCard"` / `limitTbl` / `selLimitStatus` / `renderLimitRank` /
-  `STATUS_LABEL` / `limcard` / `card chat` / `id="msgs"`；抽出脚本 `node --check` 通过。
+  `STATUS_LABEL` / `limcard` / `xmax*0.35` / `card chat` / `id="msgs"`；
+  抽出脚本 `node --check` 通过。
 * `latest.json`：94 行、`stale false`、`price_date` 为最近交易日、
   `summary.downgraded/doubt` 为 0、无异常溢价。
 * `source_status.json`：`degraded_chains` / `optional_degraded` 尽量为空、`warnings` 为 0、
@@ -711,6 +731,8 @@ python cleanup.py --limit-mb 500
 * 不要给本地版加定时任务，不要把线上版改成需要服务器的架构。
 * **不要恢复第二张「限额排名 · 申购额度」表**（用户：第一张主表已能代替）；
   「溢价 × 跟踪度分布」散点图必须保留。
+* **不要用相对分位定义「低溢价」，也不要把绿框画回左上角**；
+  `≤2% / ≤1%` 绝对阈值与图例的落入数量是刻意的诚实口径，空框不是 bug。
 * 不要把 IOPV 当实时估值，不要输出未经标注的降级/陈旧数据。
 * 仅供数据观察与学习，**不构成投资建议**（页脚必须保留免责声明）。
 
@@ -723,6 +745,7 @@ python cleanup.py --limit-mb 500
 | 主表加一列指标 | 两套模板的 `COLS` 数组 + 后端 `COLUMNS` / 导出 `cols` | 同时加 `NOTE` 简注和 `METRIC_NOTES` 详注；跑 7.2 确认表头 ⓘ 数量变化 |
 | 加一个筛选 | 模板工具条加 `<select>`、`S` 加字段、`visibleRows()` 加条件、`bind()` 加事件 | 两套都要同步，筛选口径保持一致 |
 | 加一个主表限额/状态筛选项 | `selLimit` 加 `<option>`、`S.limit` 加分支、`limitMatch()` 加分支 | 两套模板同步；`limitMatch()` 是单参数，别再引第二参数；跑 7.2 核对筛选计数 |
+| 改「低溢价」阈值 | 两套模板 `renderScatter()` 开头的 `GOOD_PREM` / `GOOD_TE` | 同步图例初始文本、说明文字、7.2 基线与第 11 章；**不要改成按样本分位动态计算** |
 | 改评分权重 | `config.json` 的 `weights`（固化）/ 页面输入框（临时） | 页面权重只影响本页，不写回后端 |
 | 调整标的范围 | `config.json` 的 `index_patterns` / `exclude_pattern` / `fund_type_pattern` | 改完看 `registry.json` diff，确认没有误纳中证500 类 |
 | 永久剔除某只基金 | `registry.json` 里该 code 的 `status` 改 `excluded` | 唯一允许人工覆写的数据资产；自动发现不会覆盖 |
@@ -751,7 +774,8 @@ python cleanup.py --limit-mb 500
 | 主表默认可买视图 | 44 / 94（排除 50 只场外暂停/封闭期；场内 18 全保留）；榜首随评分权重变化 |
 | 主表限额筛选（桩内关闭默认排除） | 不限 94、≤10 元 37、≤100 元 48、≥1 万元 2、暂停/封闭期 56、限大额 82、开放 14 |
 | 页面结构 | 主表 + 中文注释卡 + 散点图；**无第二张限额排名表** |
-| 页面体积 | 线上约 122KB、本地约 117KB（零外链；删除第二张表后缩小） |
+| 散点图绿框 | 左下角、绝对阈值 `≤2% / ≤1%`；2026-11-11 场内 18 只溢价 5.98%~21.05%，**0 只落入**（空框属正常） |
+| 页面体积 | 线上约 123KB、本地约 118KB（零外链；绿框口径修正后略增） |
 | 刷新耗时 | 本地约 32 秒；线上增量约 44 秒，首次全量约 202 秒 |
 | 产物体积 | `cleanup_report.json` 的 `after_bytes` 约 1.21MB |
 | 发布形态 | `gh-pages` HEAD commit `parents=0` |
@@ -776,6 +800,7 @@ python cleanup.py --limit-mb 500
 | 2026-11-11 | 聚合看板 `wj-dashboards.pages.dev` 从 6 个 tab 扩到 7 个，本看板作为第 7 个 `QDII 溢价` 标签；README 顶部加入综合看板链接 |
 | 2026-11-11 | 主表默认改为**按综合评分降序**；工具条新增独立勾选框「排除暂停/封闭期」（默认勾选，只排除场外 50 只、保留场内 18 只），默认可买视图 44 只 |
 | 2026-11-11 | **移除第二张「限额排名 · 申购额度」表**（用户：第一张主表已能代替）：两套模板删 `.limcard` / `limitCard` / `renderLimitRank()` / `STATUS_LABEL` / `limSortRank()` / 卡片绑定，`limitMatch()` 还原单参数；主表日限额列 / 限额下拉 / 按日限额排序保持不变；「溢价 × 跟踪度分布」散点图保留；页面缩至线上 122KB / 本地 117KB；README 第 2.6 / 6 / 7.2 / 7.5 / 9 / 10 / 11 / 12 章同步 |
+| 2026-11-11 | **修正散点图绿框**：旧代码用 `ymin+35%*(ymax-ymin)` 相对分位且从图顶起画，实际框住的是「低 TE + 高溢价」（当日下界 7.07%），与「低溢价」图例相反；改为**左下角 + 绝对阈值 `GOOD_PREM=2` / `GOOD_TE=1`**，新增 `scatterLegend` 显示阈值与落入数量（当前 0/18，标注「暂无标的进入便宜区」），说明文字改「左下＝低溢价且跟踪好」；两套模板、`check_pages.js` 断言、README 第 1 / 2.6 / 6 / 7.2 / 7.5 / 9 / 10 / 11 / 12 章同步 |
 
 ---
 

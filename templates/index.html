@@ -126,9 +126,9 @@ footer{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.8}
         </div>
         <div class="scatter card">
           <div style="font-size:13px;font-weight:600;margin-bottom:4px">溢价 × 跟踪度分布</div>
-          <div class="small">左上＝低溢价且跟踪好；横轴年化跟踪误差 TE(%)，纵轴主溢价(%)。仅显示场内且两项都有值的基金。</div>
+          <div class="small">左下＝低溢价且跟踪好（越靠下溢价越低、越靠左 TE 越小）；横轴年化跟踪误差 TE(%)，纵轴主溢价(%)。仅显示场内且两项都有值的基金。绿框用固定阈值，不随当日行情缩放。</div>
           <svg id="scatter" viewBox="0 0 900 260" width="100%" height="260" role="img"></svg>
-          <div class="legend"><span><i class="dot" style="background:#185fa5"></i>标普500</span><span><i class="dot" style="background:#6a4fb3"></i>纳指100</span><span>绿色虚线框为低溢价·低误差区</span></div>
+          <div class="legend"><span><i class="dot" style="background:#185fa5"></i>标普500</span><span><i class="dot" style="background:#6a4fb3"></i>纳指100</span><span id="scatterLegend">绿色虚线框＝低溢价·低误差区（主溢价 ≤2% 且 TE ≤1%）</span></div>
         </div>
       </div>
     </div>
@@ -370,7 +370,11 @@ function renderTable(){
 }
 function renderScatter(rows){
   const svg=document.getElementById('scatter');
+  const GOOD_PREM=2,GOOD_TE=1;
   const pts=rows.filter(r=>r.te!==null&&r.te!==undefined&&pr(r)!==null&&pr(r)!==undefined&&(r.venue==='ETF'||r.venue==='LOF'));
+  const hit=pts.filter(r=>r.te<=GOOD_TE&&pr(r)<=GOOD_PREM).length;
+  const lg=document.getElementById('scatterLegend');
+  if(lg)lg.textContent=`绿色虚线框＝低溢价·低误差区（主溢价 ≤${GOOD_PREM}% 且 TE ≤${GOOD_TE}%）｜当前视图 ${hit}/${pts.length} 只场内基金落入${hit?'':'，暂无标的进入便宜区'}`;
   if(pts.length<2){svg.innerHTML='<text x="20" y="30" fill="#6b7484" font-size="13">数据积累中，暂无足够点绘制散点图</text>';return}
   const W2=900,H=260,L=54,R=18,T=14,B=34;
   const xs=pts.map(r=>r.te),ys=pts.map(r=>pr(r));
@@ -378,8 +382,12 @@ function renderScatter(rows){
   const ymin=Math.min(...ys,0)-1, ymax=Math.max(...ys,0)+1;
   const X=v=>L+(v-xmin)/(xmax-xmin)*(W2-L-R), Y=v=>T+(ymax-v)/(ymax-ymin)*(H-T-B);
   let s=`<rect x="${L}" y="${T}" width="${W2-L-R}" height="${H-T-B}" fill="#fbfcfe" stroke="#e3e6eb"/>`;
-  const goodX=X(Math.min(xmax*0.35,xmax)),goodY=Y(Math.min(ymax,ymin+(ymax-ymin)*0.35));
-  s+=`<rect x="${L}" y="${T}" width="${goodX-L}" height="${goodY-T}" fill="#e6f5ee" stroke="#0f8a5f" stroke-dasharray="4 3" opacity="0.6"/>`;
+  const gx=X(Math.max(xmin,Math.min(GOOD_TE,xmax))),gy=Y(Math.max(ymin,Math.min(GOOD_PREM,ymax)));
+  const gw=Math.max(0,gx-L),gh=Math.max(0,(H-B)-gy);
+  if(gw>0&&gh>0){
+    s+=`<rect x="${L}" y="${gy}" width="${gw}" height="${gh}" fill="#e6f5ee" stroke="#0f8a5f" stroke-dasharray="4 3" opacity="0.6"/>`;
+    s+=`<text x="${L+8}" y="${(gy+H-B)/2+4}" font-size="11" fill="#0f8a5f">低溢价·低误差区 ≤${GOOD_PREM}% / TE ≤${GOOD_TE}%</text>`;
+  }
   for(let i=0;i<=4;i++){const v=ymin+(ymax-ymin)*i/4;const y=Y(v);s+=`<line x1="${L}" y1="${y}" x2="${W2-R}" y2="${y}" stroke="#eef1f5"/><text x="${L-6}" y="${y+4}" text-anchor="end" font-size="11" fill="#6b7484">${v.toFixed(1)}%</text>`}
   for(let i=0;i<=4;i++){const v=xmin+(xmax-xmin)*i/4;const x=X(v);s+=`<line x1="${x}" y1="${T}" x2="${x}" y2="${H-B}" stroke="#eef1f5"/><text x="${x}" y="${H-B+16}" text-anchor="middle" font-size="11" fill="#6b7484">${v.toFixed(1)}</text>`}
   if(ymin<0&&ymax>0){const y=Y(0);s+=`<line x1="${L}" y1="${y}" x2="${W2-R}" y2="${y}" stroke="#b9c2cf" stroke-width="1"/>`}
