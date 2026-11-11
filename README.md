@@ -8,6 +8,7 @@
 |---|---|---|
 | **主地址（看板）** | [**https://wj402041069-del.github.io/us-qdii-premium/**](https://wj402041069-del.github.io/us-qdii-premium/) | GitHub Pages 托管，手机 / 电脑浏览器直接打开；北京时间每天 21:00 自动刷新 |
 | **源码 / 手动刷新** | [**https://github.com/wj402041069-del/us-qdii-premium**](https://github.com/wj402041069-del/us-qdii-premium) | Actions → 每日刷新 QDII 溢价与跟踪度 → Run workflow |
+| **看板中心（聚合入口）** | [**https://wj-dashboards.pages.dev/**](https://wj-dashboards.pages.dev/) | 一个页面切七个看板，本看板是**第 7 个标签**（Cloudflare Pages 部署） |
 | **给 AI 的文本摘要（推荐发这个）** | [**https://wj402041069-del.github.io/us-qdii-premium/llms.txt**](https://wj402041069-del.github.io/us-qdii-premium/llms.txt) | 纯文本，自动跟随数据日更新；问 AI / 丢给大模型时发这个链接，别发网页 |
 | **离线快照** | `gh-pages` 分支的 `index.html` | 下载后双击即可看，数据已烤死在 HTML 里，断网也能看 |
 
@@ -542,6 +543,25 @@ python cleanup.py --limit-mb 500
 `dist/index.html` 双击即可离线查看；只有「自动刷新」是线上才有的。
 本地跑不等于发布，发布只由 `tools/deploy.sh` 在 Actions 里完成。
 
+#### 5.8 聚合看板 `wj-dashboards.pages.dev`（另一个站点，别和本仓库混）
+
+* 它是**独立的 Cloudflare Pages 项目** `wj-dashboards`，源码不在本 GitHub 仓库里；
+  本地副本是工作区根目录的 `hub/index.html`（单文件、零外链、纯静态）。
+* 页面顶部 `.bar` 的切换按钮由 `SITES` 数组动态生成，**加板块 = 往 `SITES` 追加一项**
+  （字段 `k / name / url / size / desc`），同时改 `<title>` 里的「N 个监测面板」计数。
+  不要另写一套 tab 结构，保持 7 个选项位置与样式完全一致。
+* 2026-11-11 起共 **7 个** tab，本看板是第 7 个 `k:'qdii'`：
+  `https://wj402041069-del.github.io/us-qdii-premium/`。
+* 部署方式（凭据只在运行时从用户处取得，绝不写进任何文件）：
+  ```bash
+  CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... \
+    wrangler pages deploy <只含 index.html 的干净目录> \
+    --project-name=wj-dashboards --branch=main --commit-dirty=true
+  ```
+  部署后带 cache-buster 核验 `<title>`、`SITES` 里 tab 数量与新 URL；
+  `GET /accounts/{id}/pages/projects/wj-dashboards/deployments` 可查 `production success`。
+  本机直连 `pages.dev` 可能要走 `trust_env=False`（绕过代理），否则 TLS 握手超时。
+
 ---
 
 ### 6. 前端约定（两套模板）
@@ -725,6 +745,7 @@ python cleanup.py --limit-mb 500
 | 2026-11-11 | 新增本维护手册 |
 | 2026-11-11 | 「限额排名 · 申购额度」新增申购状态筛选（默认全部状态），卡片默认改为 最松（限额最大）/ 不限 元 / 全部；状态筛选复用主表 `limitMatch()`，两套页面与文档同步 |
 | 2026-11-11 | 取消独立的 `MAINTENANCE.md`，全文并入线上仓库 `README.md` 第八章；README 顶部按参考仓库格式加入加粗在线地址表 |
+| 2026-11-11 | 聚合看板 `wj-dashboards.pages.dev` 从 6 个 tab 扩到 7 个，本看板作为第 7 个 `QDII 溢价` 标签；README 顶部加入综合看板链接 |
 
 ---
 
