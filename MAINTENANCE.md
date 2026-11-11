@@ -145,6 +145,13 @@ earl-etf-dashboard/
   —— 申赎套利机制失效时往往推高场内溢价。
 * 主表「限额」下拉只统计有明确金额的场外份额；「暂停申购」走「仅暂停申购 / 封闭期」筛选项。
 * `purchase_status` 常见值：暂停申购 / 限大额 / 开放申购 / 封闭期 / 场内交易。
+* **「限额排名 · 申购额度」卡片有独立的申购状态下拉**，默认值：
+  全部状态 / 最松（限额最大）/ 金额不限 / 全部条数，打开即是完整限额排名表。
+  它**直接复用主表的 `limitMatch(r, f)`**（第二参数传入筛选值，不传则用 `S.limit`），
+  所以两边计数必须完全一致；给卡片加新选项时也要同步 `STATUS_LABEL`。
+* 卡片选定某个状态时会**自动纳入场内**且不再强制「必须有日限额数字」，
+  因为「场内交易」12 只本身没有申赎额度，否则会被「仅看场外」漏掉；
+  排序用卡片专用的 `limSortRank()`（把 `limKey=null` 视为最松），**不要改主表用的 `limSort()`**。
 
 ### 2.7 综合评分与中文注释
 
@@ -332,13 +339,17 @@ python cleanup.py --limit-mb 500
 * `.chip` 样式必须保留：主表格「按主代码折叠」的展开按钮复用了它。
 * 页面自上而下：KPI/提示 → 工具条 → 主表格 → 指标中文注释卡 → 限额排名卡 → 散点图 → 页脚。
 * 必须保留：主口径切换、指数/场所/限额筛选、排序、按主代码折叠、搜索、评分权重即时调整、
-  表头 ⓘ 简注、`METRIC_NOTES` 注释卡、限额榜（金额上限/最紧最松/前 N/含场内/点行定位）、
-  CSV 导出、涨红跌绿。
+  表头 ⓘ 简注、`METRIC_NOTES` 注释卡、限额榜（申购状态筛选 / 金额上限 / 最紧最松 / 前 N /
+  含场内 / 点行定位）、CSV 导出、涨红跌绿。
+* 限额榜 4 个控件的默认项必须是各自 `<select>` 的**第一项**：
+  `selLimitStatus=""`（全部状态）、`selLimitRank="loose"`（最松）、`txtLimitMax` 空（不限 元）、
+  `selLimitTop="999"`（全部）。改顺序等于改默认视图，需同步 7.2 基线与两份 README。
 * 线上版额外有「数据源状态」按钮（`renderSources()`）与陈旧横幅；本地版额外有「立即刷新」
   （离线时用 `pushNotice()` 在顶部提示区反馈，不再依赖聊天窗口）。
 * 前端验证方式见 7.2：把渲染后 HTML 的 `<script>` 抽出做 `node --check`，
-  再用 Node `vm` + DOM 桩跑一遍初始化（桩要给 `selLimitRank='tight'`、`selLimitTop='10'`、
-  `w1..w4` 设默认值），确认无异常、注释 11 行、表头 ⓘ 14 个、限额榜默认 10 行。
+  再用 Node `vm` + DOM 桩跑一遍初始化（桩给 `selLimitRank='loose'`、`selLimitTop='999'`、
+  `selLimitStatus=''`、`w1..w4` 默认权重），确认无异常、注释 11 行、表头 ⓘ 14 个、
+  限额榜默认 68 行，且 4 个状态档的计数与主表筛选完全一致。
 
 ---
 
@@ -361,15 +372,19 @@ node us-qdii-online/prev/check_pages.js
 ```
 
 DOM 桩基线：`INIT OK`、无 `msgs/chips/txtAsk/btnAsk` 引用、注释卡片 11 个 `<tr>`、
-指标条目 10、表头 ⓘ 14、限额榜 10 行、筛 `le10=37 / le100=48 / ge10000=2 /
-paused=56 / limited=82 / open=14`、`COLS` 含 `limit_amount`。
+指标条目 10、表头 ⓘ 14、卡片默认值 `全部状态 / loose / 999`、限额榜默认 68 行；
+卡片状态筛选 `all=68 / open=14 / limited=82 / paused=56`（**必须与主表同名筛选项完全相等**）；
+主表筛选 `le10=37 / le100=48 / ge10000=2 / paused=56 / limited=82 / open=14`、
+`COLS` 含 `limit_amount`、`STATUS_LABEL['']` 为「全部状态」。
 
 > `prev/` 是**本地验证资产**，被 `.gitignore` 忽略、不会出现在 GitHub 仓库里。
+> `prev/check_pages.js` 现在直接读取渲染后的 `dist/index.html` 与 `../us-qdii-monitor/dashboard.html`
+> 抽取脚本，不需要额外的 `_online_page.js` 之类的中间文件；改完模板**先重渲染再跑它**。
 > 若你是从 GitHub 仓库单独接手、拿不到 `prev/check_pages.js` 与 `prev/test_fallback_guard.py`，
 > 按上面描述自行搭一个最小 DOM 桩即可（要点：`document.getElementById` 返回带
 > `value / innerHTML / style / dataset / checked / appendChild / querySelectorAll` 的对象，
-> `selLimitRank='tight'`、`selLimitTop='10'`、`w1..w4` 给默认权重，脚本尾部追加
-> `;globalThis.__api={S,visibleRows,limitMatch,renderLimitRank,METRIC_NOTES,COLS};` 后导出）。
+> `selLimitStatus=''`、`selLimitRank='loose'`、`selLimitTop='999'`、`w1..w4` 给默认权重，
+> 脚本尾部追加 `;globalThis.__api={S,visibleRows,limitMatch,renderLimitRank,STATUS_LABEL,METRIC_NOTES,COLS};`）。
 
 ### 7.3 本地端到端
 
@@ -396,8 +411,8 @@ python cleanup.py --limit-mb 500
 ### 7.5 线上发布核验
 
 * GitHub Actions 最近一次 `每日刷新 QDII 溢价与跟踪度` = `success`，pages build = `success`。
-* Pages（带 `?v=<时间戳>`）：`index.html` 200 且含「指标中文注释 / 限额排名 / 日限额」、
-  不含 `card chat` / `id="msgs"`；抽出脚本 `node --check` 通过。
+* Pages（带 `?v=<时间戳>`）：`index.html` 200 且含「指标中文注释 / 限额排名 / 日限额 /
+  全部状态 / 最松（限额最大）」、不含 `card chat` / `id="msgs"`；抽出脚本 `node --check` 通过。
 * `latest.json`：94 行、`stale false`、`price_date` 为最近交易日、
   `summary.downgraded/doubt` 为 0、无异常溢价。
 * `source_status.json`：`core_degraded` 尽量为空；有降级时看 `warnings` 是否说清覆盖方式。
@@ -445,6 +460,7 @@ python cleanup.py --limit-mb 500
 |---|---|---|
 | 主表加一列指标 | 两套模板的 `COLS` 数组 + 后端 `COLUMNS` / 导出 `cols` | 同时加 `NOTE` 简注和 `METRIC_NOTES` 详注；跑 7.2 确认表头 ⓘ 数量变化 |
 | 加一个筛选 | 模板工具条加 `<select>`、`S` 加字段、`visibleRows()` 加条件、`bind()` 加事件 | 两套都要同步，筛选口径保持一致 |
+| 加一个卡片状态档 | `selLimitStatus` 加 `<option>`、`limitMatch()` 加分支、`STATUS_LABEL` 加文案 | 复用 `limitMatch(r,f)` 第二参数，别另写一套判定；跑 7.2 核对卡片计数 == 主表计数 |
 | 改评分权重 | `config.json` 的 `weights`（固化）/ 页面输入框（临时） | 页面权重只影响本页，不写回后端 |
 | 调整标的范围 | `config.json` 的 `index_patterns` / `exclude_pattern` / `fund_type_pattern` | 改完看 `registry.json` diff，确认没有误纳中证500 类 |
 | 永久剔除某只基金 | `registry.json` 里该 code 的 `status` 改 `excluded` | 唯一允许人工覆写的数据资产；自动发现不会覆盖 |
@@ -470,7 +486,8 @@ python cleanup.py --limit-mb 500
 | 最高主溢价 | 20.29%（`159501`，2026-11-10 数据日） |
 | 降级 / 存疑 / rejected | 理想都是 0 |
 | 申购状态分布 | 暂停申购 54、限大额 26、场内交易 12、封闭期 2 |
-| 页面体积 | 线上约 125KB、本地约 120KB（零外链；移除对话窗口后明显变小） |
+| 限额榜状态筛选 | 默认「全部状态」68 条；开放/不限额 14、限大额 82、暂停/封闭期 56（与主表同名筛选相等） |
+| 页面体积 | 线上约 127KB、本地约 122KB（零外链；新增状态筛选后略增） |
 | 刷新耗时 | 本地约 32 秒；线上增量约 44 秒，首次全量约 202 秒 |
 | 产物体积 | `cleanup_report.json` 的 `after_bytes` 约 1.21MB |
 | 发布形态 | `gh-pages` HEAD commit `parents=0` |
@@ -490,6 +507,7 @@ python cleanup.py --limit-mb 500
 | 2026-11-11 | 修复腾讯行情兜底代码错配导致的 209% 假溢价（白名单 + venue_hint + 荒谬溢价护栏 + 场外不继承快照价格） |
 | 2026-11-11 | 移除两套页面右侧对话窗口，改为单列全宽；线上版浏览器内规则引擎 JS 一并删除；本地版 `chat_engine.py` / `/api/chat` 保留为可选兼容接口 |
 | 2026-11-11 | 新增本维护手册 |
+| 2026-11-11 | 「限额排名 · 申购额度」新增申购状态筛选（默认全部状态），卡片默认改为 最松（限额最大）/ 不限 元 / 全部；状态筛选复用主表 `limitMatch()`，两套页面与文档同步 |
 
 ---
 
