@@ -414,7 +414,7 @@ earl-etf-dashboard/
 | 3.13 | 兜底成功时不能写「所有数据源均不可用」 | `collect()` 会改写 warnings 为「已由腾讯批量行情兜底完整覆盖」，并置 `price_fallback_used` |
 | 3.14 | `stooq.com` 现有 JS 校验页 | 不能作兜底 |
 | 3.15 | pandas 3.x 对 `date` 与字符串推断出不同 datetime 精度，`merge_asof` 报 `dtype('<M8[s]') and dtype('<M8[us]')` 不兼容 | 所有日期列统一 `datetime64[ns]`：`DT="datetime64[ns]"`, `pd.Timestamp(s).as_unit("ns")` |
-| 3.16 | 本机 Windows 上 AKShare 的 `py_mini_racer`（V8）偶发 `[FATAL:partition_address_space.cc] Check failed` 原生崩溃 | 与业务代码无关，**Linux runner 上不会发生**；本地重跑一次即可，不要为此改代码 |
+| 3.16 | AKShare 的 `py_mini_racer`（V8）偶发 `[FATAL:partition_address_space.cc] Check failed: !IsConfigurablePoolInitialized()` 原生崩溃，进程 exit 133 / core dumped，**Windows 本机与 Linux runner 都会遇到**（2026-11-11 的 push run `42952280386` 第 1 次 attempt 就崩在采集完成后） | 与业务代码无关，**不要为此改采集逻辑**；本地直接重跑 `refresh.py`，线上在 Actions 里点 `Re-run jobs`（同一 run 的新 attempt）。定时任务有 21:30 / 23:00 两级补跑自愈；`refresh.py` 只在 `export()` 阶段才写产物，崩溃在采集阶段不会污染快照 |
 | 3.17 | 东财 push2 行情接口短时间请求过多会限流，`RemoteDisconnected` / `502` / `Push2RateLimitError` | 等 5~40 分钟或走腾讯兜底；不要写死重试循环 |
 | 3.18 | `DataFrame or DataFrame` 会触发 `ValueError: The truth value of a DataFrame is ambiguous` | 用 `if b is None or b.empty:` 显式判断 |
 
@@ -673,7 +673,9 @@ python cleanup.py --limit-mb 500
   `STATUS_LABEL` / `limcard` / `card chat` / `id="msgs"`；抽出脚本 `node --check` 通过。
 * `latest.json`：94 行、`stale false`、`price_date` 为最近交易日、
   `summary.downgraded/doubt` 为 0、无异常溢价。
-* `source_status.json`：`core_degraded` 尽量为空；有降级时看 `warnings` 是否说清覆盖方式。
+* `source_status.json`：`degraded_chains` / `optional_degraded` 尽量为空、`warnings` 为 0、
+  `worker_reachable=true`、`stale=false`；有降级时看 `warnings` 是否说清覆盖方式。
+  （字段是 `degraded_chains` / `optional_degraded`，不是 `core_degraded`。）
 * `cleanup_report.json`：`ok true`，`after_bytes` 约 1.2MB（远低于 500MB）。
 * `meta.json`：`generated_at` 为本次；`gh-pages` HEAD commit `parents=0`。
 
@@ -692,7 +694,7 @@ python cleanup.py --limit-mb 500
 | 页面显示「⚠ 数据陈旧」 | 全源失效，发布了上次快照 | 正常降级；下次补跑会自动修复，不要用陈旧数据做当日判断 |
 | 页面空白 / Jinja 残留 | 渲染没替换占位符 | 检查 `render_html()` / `render_dashboard_html()` 的 app_context |
 | 页面 JS 报错 `xxx is not defined` | 删函数时漏了引用 | 跑 7.2 的 DOM 桩，它会执行完整初始化 |
-| 本地刷新进程直接崩、无 Python 栈 | Windows `py_mini_racer` 原生 FATAL（3.16） | 重跑一次；Linux runner 不受影响 |
+| 刷新进程直接崩、无 Python 栈、exit 133 | `py_mini_racer` V8 原生 FATAL（3.16），Windows / Linux 都可能 | 本地重跑 `refresh.py`；线上 Actions 点 `Re-run jobs` 或等 21:30 / 23:00 补跑，不要为此改代码 |
 | 仓库体积随时间变大 | 改成了累积 commit / 没强推 | 恢复孤立单提交 + `--force`（5.5） |
 | 21:00 正点没刷新 | `gate.py` 语义被改 | 恢复「当天 20:00 后已有成功产出才跳过」 |
 | `ValueError: truth value of a DataFrame is ambiguous` | `df1 or df2` | 改 `if b is None or b.empty:`（3.18） |
