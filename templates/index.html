@@ -105,10 +105,11 @@ footer{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.8}
             <option value="scale_yi">按规模</option>
             <option value="amount_yi">按成交额</option>
             <option value="limit_amount">按日限额（限额排名）</option>
-            <option value="score">按综合评分</option>
+            <option value="score" selected>按综合评分</option>
             <option value="code">按代码</option>
           </select>
           <button id="btnDir" data-dir="desc">降序 ↓</button>
+          <label class="ck" title="默认排除场外暂停申购 / 封闭期；场内二级市场买卖不受申购状态限制，仍全部显示"><input type="checkbox" id="ckHidePaused" checked>排除暂停/封闭期</label>
           <label class="ck"><input type="checkbox" id="ckFold">按主代码折叠</label>
           <input id="txtSearch" placeholder="搜索代码 / 名称" style="width:150px">
         </div>
@@ -158,7 +159,7 @@ footer{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.8}
 </div>
 <script>
 const D = {{ data_json|safe }};
-const S = {kind:'estimated', sort:'primary', dir:'desc', fold:false, index:'', venue:'', search:'', limit:'', expanded:{}};
+const S = {kind:'estimated', sort:'score', dir:'desc', fold:false, hidePaused:true, index:'', venue:'', search:'', limit:'', expanded:{}};
 const W = [0.4,0.3,0.15,0.15];
 const meta = D.meta||{}, sum = D.summary||{}, ROWS = D.rows||[], ST = D.source_status||{};
 const fm=(v,d=2,s='')=> (v===null||v===undefined||v==='')?'—':(typeof v==='number'?v.toFixed(d)+s:String(v)+s);
@@ -347,6 +348,7 @@ function visibleRows(){
     if(S.venue==='ON'&&!(r.venue==='ETF'||r.venue==='LOF'))return false;
     if(S.venue==='OFF'&&r.venue!=='OTC')return false;
     if(S.limit&&!limitMatch(r))return false;
+    if(S.hidePaused&&r.venue==='OTC'&&/暂停|封闭/.test(r.purchase_status||''))return false;
     if(S.search){const q=S.search.toLowerCase();if(!((r.code||'').includes(q)||(r.name||'').toLowerCase().includes(q)))return false;}
     return true;
   });
@@ -383,7 +385,11 @@ function renderTable(){
   }
   html+='</tbody>';
   document.getElementById('tbl').innerHTML=html;
-  document.getElementById('tblInfo').textContent=`显示 ${all.length} / ${ROWS.length} 只代码`+(S.fold?` · 折叠为 ${rows.length} 组`:'')+(S.limit?` · 已按限额筛选`:'')+'　表头 ⓘ 为中文注释，点「指标中文注释」看完整说明';
+  document.getElementById('tblInfo').textContent=`显示 ${all.length} / ${ROWS.length} 只代码`+
+    (S.fold?` · 折叠为 ${rows.length} 组`:'')+
+    (S.hidePaused?' · 已排除场外暂停申购/封闭期（场内二级市场买卖不受影响）':'')+
+    (S.limit?' · 已按限额筛选':'')+
+    '　默认按综合评分降序；表头 ⓘ 为中文注释，点「指标中文注释」看完整说明';
   document.querySelectorAll('#tbl button[data-grp]').forEach(b=>b.onclick=()=>{const k=b.dataset.grp;S.expanded[k]=!S.expanded[k];renderTable()});
   document.querySelectorAll('#tbl th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(S.sort===k)S.dir=S.dir==='desc'?'asc':'desc';else{S.sort=k;S.dir='desc'}document.getElementById('selSort').value=(['primary','static','te','scale_yi','amount_yi','limit_amount','score','code'].includes(k)?k:'primary');document.getElementById('btnDir').dataset.dir=S.dir;document.getElementById('btnDir').textContent=S.dir==='desc'?'降序 ↓':'升序 ↑';renderTable()});
   renderScatter(all);
@@ -469,6 +475,7 @@ function bind(){
   document.getElementById('selKind').onchange=e=>{S.kind=e.target.value;fillKpis();renderTable()};
   document.getElementById('selSort').onchange=e=>{S.sort=e.target.value;renderTable()};
   document.getElementById('btnDir').onclick=e=>{S.dir=S.dir==='desc'?'asc':'desc';e.target.dataset.dir=S.dir;e.target.textContent=S.dir==='desc'?'降序 ↓':'升序 ↑';renderTable()};
+  document.getElementById('ckHidePaused').onchange=e=>{S.hidePaused=e.target.checked;renderTable()};
   document.getElementById('ckFold').onchange=e=>{S.fold=e.target.checked;S.expanded={};renderTable()};
   document.getElementById('txtSearch').oninput=e=>{S.search=e.target.value.trim();renderTable()};
   ['w1','w2','w3','w4'].forEach((id,i)=>{document.getElementById(id).value=(meta.weights?[meta.weights.premium,meta.weights.tracking,meta.weights.scale,meta.weights.liquidity][i]:W[i]);document.getElementById(id).oninput=renderTable});
