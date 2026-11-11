@@ -64,10 +64,6 @@ footer{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.8}
 .notes td:first-child{width:96px;font-weight:600;white-space:nowrap}
 .notes td:nth-child(2){width:190px}
 .notes tr:hover td{background:transparent}
-.limcard{margin-top:12px}
-.limcard .tblbox{max-height:420px}
-.limcard tbody tr{cursor:pointer}
-.limcard tbody tr:hover td{background:#eaf3fd}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
@@ -104,7 +100,7 @@ footer{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.8}
             <option value="te">按跟踪误差</option>
             <option value="scale_yi">按规模</option>
             <option value="amount_yi">按成交额</option>
-            <option value="limit_amount">按日限额（限额排名）</option>
+            <option value="limit_amount">按日限额</option>
             <option value="score" selected>按综合评分</option>
             <option value="code">按代码</option>
           </select>
@@ -127,24 +123,6 @@ footer{color:var(--muted);font-size:11px;margin-top:16px;line-height:1.8}
         <div class="notes card" id="notesCard">
           <div style="font-size:13px;font-weight:600;margin-bottom:6px">指标中文注释 <span class="small" style="font-weight:400">（鼠标悬停表头的 ⓘ 也可以看简注；点列头可排序）</span></div>
           <div id="notesBody"></div>
-        </div>
-        <div class="card limcard" id="limitCard">
-          <div class="bar" style="margin-bottom:8px">
-            <span style="font-size:13px;font-weight:600">限额排名 · 申购额度</span>
-            <select id="selLimitStatus" title="按申购状态筛选；与主表「限额」下拉同一套口径">
-              <option value="">全部状态</option>
-              <option value="open">开放申购 / 不限额（最松）</option>
-              <option value="limited">仅有限额 / 限大额</option>
-              <option value="paused">仅暂停申购 / 封闭期（最紧）</option>
-            </select>
-            <select id="selLimitRank"><option value="loose">最松（限额最大）</option><option value="tight">最紧（限额最小）</option></select>
-            <label class="ck">仅看 ≤ <input type="number" id="txtLimitMax" placeholder="不限" style="width:88px;padding:3px 6px"> 元</label>
-            <select id="selLimitTop"><option value="999">全部</option><option value="10">前 10</option><option value="20">前 20</option></select>
-            <label class="ck"><input type="checkbox" id="ckLimitOn">含场内一级申购</label>
-            <span class="small">单位：元/日 · 点行可在上方表格定位 · QDII 额度紧张 → 场外限购 → 买盘挤到场内 → 溢价走高</span>
-          </div>
-          <div class="tblbox"><table id="limitTbl"><thead></thead><tbody></tbody></table></div>
-          <div class="small" id="limitInfo" style="margin-top:6px"></div>
         </div>
         <div class="scatter card">
           <div style="font-size:13px;font-weight:600;margin-bottom:4px">溢价 × 跟踪度分布</div>
@@ -241,11 +219,8 @@ function limKey(r){
   return v>=UNLIMITED?Infinity:v;
 }
 const limSort=r=>{const k=limKey(r);return k===Infinity?1e18:k;};
-/* 卡片专用：状态筛选会带进「场内买卖」等无日限额的行，把它们视为最松，不改主表排序口径 */
-const limSortRank=r=>{const k=limKey(r);return (k===null||k===Infinity)?1e18:k;};
-/* limitMatch 的第二参数供「限额排名」卡片的申购状态下拉复用，口径与主表完全一致 */
-function limitMatch(r,f){
-  const k=(f===undefined?S.limit:f); if(!k)return true;
+function limitMatch(r){
+  const k=S.limit; if(!k)return true;
   const st=r.purchase_status||'', v=limNum(r);
   const real=(r.venue==='OTC'&&v!==null&&v>0&&v<UNLIMITED);
   if(k==='paused')return /暂停|封闭/.test(st);
@@ -256,7 +231,6 @@ function limitMatch(r,f){
   if(k==='ge10000')return real&&v>=10000;
   return true;
 }
-const STATUS_LABEL={'':'全部状态','open':'开放申购 / 不限额','limited':'仅有限额 / 限大额','paused':'仅暂停申购 / 封闭期'};
 
 function weightedScore(r){
   const w=[+document.getElementById('w1').value,+document.getElementById('w2').value,+document.getElementById('w3').value,+document.getElementById('w4').value];
@@ -422,48 +396,6 @@ function renderNotes(){
     '</tbody></table>';
 }
 
-/* ---------------- 限额排名（可按申购状态 + 金额筛选） ---------------- */
-function renderLimitRank(){
-  const dir=document.getElementById('selLimitRank').value;
-  const top=+document.getElementById('selLimitTop').value||10;
-  const mx=parseFloat(document.getElementById('txtLimitMax').value);
-  const inclOn=document.getElementById('ckLimitOn').checked;
-  const stf=document.getElementById('selLimitStatus').value;
-  /* 选定申购状态时自动纳入场内（否则「开放申购/不限额」里的场内交易会被漏掉），
-     且不再强制要求有日限额数字；筛选口径与主表下拉完全一致 */
-  let items=ROWS.filter(r=>(inclOn||!!stf||r.venue==='OTC'));
-  if(stf) items=items.filter(r=>limitMatch(r,stf));
-  if(isFinite(mx)&&mx>0) items=items.filter(r=>{const k=limKey(r);return k!==null&&k<=mx;});
-  if(!stf) items=items.filter(r=>limKey(r)!==null);
-  items.sort((a,b)=>dir==='tight'?limSortRank(a)-limSortRank(b):limSortRank(b)-limSortRank(a));
-  const total=items.length;
-  items=items.slice(0,top);
-  const cols=['代码','名称','指数','场所','申购状态','日限额','主溢价%','TE%','规模(亿)'];
-  let h='<thead><tr>'+cols.map((c,i)=>`<th class="${i<5?'l':''}">${c}</th>`).join('')+'</tr></thead><tbody>';
-  h+=items.map(r=>{
-    const p=val(r,'primary');
-    const cells=[r.code,sn(r.name),IDX[r.index_key]||r.index_key,VEN[r.venue]||r.venue,
-      `<span class="tag ${/暂停|限/.test(r.purchase_status||'')?'warn':'ok'}">${r.purchase_status||'—'}</span>`,
-      limitCell(r), p===null?'—':p.toFixed(2), nf(r.te), nf(r.scale_yi,1)];
-    return `<tr data-code="${r.code}">`+cells.map((v,i)=>`<td class="${i<5?'l':''}">${v}</td>`).join('')+'</tr>';
-  }).join('');
-  h+='</tbody>';
-  document.getElementById('limitTbl').innerHTML=h;
-  document.getElementById('limitInfo').textContent=
-    `申购状态：${STATUS_LABEL[stf]||'全部状态'}${stf?'（已自动纳入场内）':''}；共 ${total} 条匹配记录，当前显示 ${items.length} 条。点任意行可在上方主表格定位该代码。`+
-    ' 金额单位：元/日；「不限」为上游极大值占位；场外按净值申赎才有限额，场内二级市场买卖无申赎限额，'+
-    '但「一级暂停」会破坏申赎套利、往往推高场内溢价。';
-  document.querySelectorAll('#limitTbl tbody tr').forEach(tr=>tr.onclick=()=>{
-    document.getElementById('txtSearch').value=tr.dataset.code;
-    S.search=tr.dataset.code;renderTable();
-    document.getElementById('tbl').scrollIntoView({behavior:'smooth',block:'start'});
-  });
-}
-
-/* ---------- 表格、限额榜与数据源面板共用的显示辅助 ---------- */
-const IDX={SP500:'标普500',NDX100:'纳指100'}, VEN={ETF:'ETF',LOF:'LOF',OTC:'场外'};
-const nf=(v,d=2,s='')=>(v===null||v===undefined||v==='')?'—':(typeof v==='number'?v.toFixed(d)+s:String(v)+s);
-const sn=(n,k=18)=>!n?'':(n.length>k?n.slice(0,k)+'…':n);
 function csvDownload(){
   const cols=['code','name','index_key','venue','currency','share_class','primary_code','price','nav','nav_date','est_nav','static','estimated','primary','premium_kind','scale_yi','amount_yi','te','td','r2','premium_noise','purchase_status','limit_amount','score'];
   const csv=[cols.join(',')].concat(ROWS.map(r=>cols.map(c=>`"${(r[c]===null||r[c]===undefined?'':r[c])}"`).join(','))).join('\n');
@@ -486,11 +418,9 @@ function bind(){
     if(show&&!p.dataset.done){renderNotes();p.dataset.done='1';}
   };
   document.getElementById('selLimit').onchange=e=>{S.limit=e.target.value;renderTable()};
-  ['selLimitRank','selLimitTop','selLimitStatus','ckLimitOn'].forEach(id=>document.getElementById(id).onchange=renderLimitRank);
-  document.getElementById('txtLimitMax').oninput=renderLimitRank;
   document.getElementById('btnCsv').onclick=csvDownload;
 }
-fillKpis();bind();renderTable();renderNotes();renderLimitRank();
+fillKpis();bind();renderTable();renderNotes();
 document.getElementById('notesCard').dataset.done='1';
 </script>
 </body>
