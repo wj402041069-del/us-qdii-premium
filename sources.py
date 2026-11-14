@@ -494,6 +494,20 @@ def direct_fx() -> pd.DataFrame:
     return df.dropna().sort_values("date").reset_index(drop=True)
 
 
+def direct_fx_l2() -> pd.DataFrame:
+    """L2 汇率兜底：新浪离岸人民币 USDCNH 实时报价（独立于东财，单行返回）。
+    东财 K 线一挂，主汇率链即彻底缺数；新浪这条独立源能把当天的 USD/CNH 续上。"""
+    txt = http_get("https://hq.sinajs.cn/list=USDCNH",
+                   headers={"Referer": "https://finance.sina.com.cn"},
+                   timeout=20, encoding="gbk").text
+    m = re.search(r'hq_str_USDCNH="([^"]*)"', txt)
+    if not m or not m.group(1).strip():
+        raise RuntimeError("新浪 USDCNH 无返回")
+    parts = m.group(1).split(",")
+    rate = float(parts[0])
+    return pd.DataFrame([(bj_today(), rate)], columns=["date", "close"])
+
+
 def direct_price_history(code: str) -> pd.DataFrame:
     market = "1" if code.startswith("5") else "0"
     j = http_json(EM_KLINE_HOSTS, params={
@@ -768,7 +782,10 @@ CHAIN_LABELS = {
     "场外份额规模": [("L2 AKShare 新浪 QDII 份额", ak_scale_open, _nonempty),
                 ("L1 新浪份额 JSONP 直连", direct_sina_scale, _nonempty)],
     "集思录交叉校验": [("L2 AKShare 集思录 QDII", ak_jisilu, _nonempty)],
-    "汇率 USD/CNH": [("L1 东财 K 线直连", direct_fx, lambda v: v is not None and len(v) > 100)],
+    "汇率 USD/CNH": [
+        ("L1 东财 K 线直连", direct_fx, lambda v: v is not None and len(v) >= 1),
+        ("L2 新浪 USDCNH 实时", direct_fx_l2, lambda v: v is not None and len(v) >= 1),
+    ],
 }
 
 
@@ -827,8 +844,10 @@ def collect(seed: dict, fallback_codes: list | None = None) -> dict:
                 # 按已知场所把腾讯兜底数据分别并入 etf / lof 帧：兜底默认只写
                 # etf 帧，会让 LOF 代码在兜底日（venue_hint 还原为 LOF）查不到价而漏价。
                 tx_codes = tx["代码"].astype(str).str.zfill(6)
-                raw["ETF 行情"] = tx[tx_codes.map(lambda c: venue_of.get(c) == "ETF")].reset_index(drop=True)
+                etf_tx = tx[tx_codes.map(lambda c: venue_of.get(c) == "ETF")]
                 lof_tx = tx[tx_codes.map(lambda c: venue_of.get(c) == "LOF")]
+                if not etf_tx.empty:
+                    raw["ETF 行情"] = etf_tx.reset_index(drop=True)
                 if not lof_tx.empty:
                     raw["LOF 行情"] = lof_tx.reset_index(drop=True)
                 fallback_used = True
@@ -841,10 +860,19 @@ def collect(seed: dict, fallback_codes: list | None = None) -> dict:
                 STATUS["warnings"].append(
                     "东财 ETF / LOF 行情主源本次不可用，场内价格已由腾讯批量行情兜底完整覆盖；"
                     "场外净值、申购状态、美股基准与汇率各自走正常链路")
-                STATUS["chains"].setdefault("ETF 行情", {}).setdefault(
-                    "attempts", []).append({
-                        "source": "→ 由腾讯行情兜底覆盖", "ok": True, "ms": 0,
-                        "detail": f"白名单内 {len(tx)} 行"})
+                # 兜底成功覆盖的场内帧，必须把它对应链路的 failed 翻回 False、
+                # 写清 active 来源。否则面板会照 chain() 记录的旧失败状态显示「全部失败」，
+                # 把「已用腾讯兜底价」误报成「无数据」。LOF 此前只写进 raw 却没翻状态，
+                # 正是这次「LOF 没吃到兜底」误报的根因；ETF 同理（原补记也漏了 failed）。
+                for venue, frame in (("ETF", etf_tx), ("LOF", lof_tx)):
+                    if frame.empty:
+                        continue
+                    STATUS["chains"][f"{venue} 行情"] = {
+                        "active": "→ 由腾讯行情兜底覆盖",
+                        "attempts": [{"source": "→ 由腾讯行情兜底覆盖", "ok": True,
+                                      "ms": 0, "detail": f"白名单内 {len(frame)} 行"}],
+                        "failed": False, "optional": False,
+                    }
 
     empty_spot = pd.DataFrame(columns=["代码", "名称", "最新价", "IOPV实时估值", "基金折价率",
                                        "成交额", "流通市值", "总市值", "最新份额",
