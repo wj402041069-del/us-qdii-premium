@@ -1607,6 +1607,7 @@ python cleanup.py --limit-mb 500
 | 2026-11-14 | **修复「最新净值批量表」链路永久失效**：原 `ak_daily_nav()` 调用的 `fund_open_fund_daily_em` / `fund_etf_fund_daily_em` 在现行 akshare 版本已移除（线上实测 `AttributeError`），导致该核心链永远降级（此前被逐代码净值兜底盖住、无可见后果）。改为**主路径直连天天基金 pingzhongdata 按 seed 代码逐只取最新单位净值**（与 `nav_history` L1 同源、可靠），AKShare 仅作前向兼容回退（`getattr` 保护）；链验证阈值由 `>1000` 降为 `>=50`。另修兜底日漏价隐患：腾讯行情兜底只写入 `etf_spot` 帧，而 `price_fallback_used` 已让 `venue_hint` 在兜底日把 LOF 代码还原为 LOF 场所，原本会让 2 只 LOF 场内基金查不到价而漏价；现按 seed 场所以 `venue_of` 把腾讯数据分别并入 `etf_spot` / `lof_spot` 帧，LOF 亦正常取价 |
 | 2026-11-14 | **保留 L0 自建 Worker 的 API-key 鉴权**（线上部署需要调用 Worker 且需保护 `A_STOCK_API_KEY` 配额不被复刻仓库占用；本地工作副本不调用 Worker，可不含该鉴权）；此前误删 Worker 鉴权已还原，不影响任何核心源 |
 | 2026-11-14 | **修复 513500 等基金虚假 −44.79% 溢价（单位净值 vs 累计净值口径）**：根因是净值解析把「累计净值」当成了「单位净值」——`direct_pz_nav` 把累计净值写进 nav 列，且 `ak_nav_history` / `worker_fund_nav` 也有 `out["nav"]=out["cum_nav"]` 的反向覆盖。513500 博时标普500ETF 的累计净值≈单位净值的 2 倍，导致溢价被算成 −44.79%（系统已标 quality=存疑）。改为净值一律用「单位净值」、累计净值仅作参考列；并清空 gh-pages 净值缓存强制全量重采，下次构建即生效 |
+| 2026-11-14 | **修复「集思录交叉校验」链全部失败**：akshare 1.20.48 将 `qdii_e_index_jsl` 更名为 `fund_qdii_e_index_jsl`（旧名已删除，调用即 AttributeError）。该链属可选链，核心数据不受影响；改为新函数名即可恢复交叉校验信号 |
 
 
 ---
