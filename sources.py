@@ -16,17 +16,6 @@
 """
 from __future__ import annotations
 
-import os
-
-
-# 自建 Worker 鉴权：密钥只从环境变量读取，绝不写进代码或提交历史
-def _worker_headers(extra=None):
-    h = dict(extra or {})
-    k = os.environ.get("A_STOCK_API_KEY", "")
-    if k:
-        h["X-API-Key"] = k
-    return h
-
 import datetime as dt
 import json
 import logging
@@ -211,7 +200,7 @@ def worker_enabled() -> bool:
 def worker_get(path: str, params: dict | None = None):
     if not worker_enabled():
         raise RuntimeError("worker disabled")
-    r = http_get(WORKER + path, params=params, headers=_worker_headers(),
+    r = http_get(WORKER + path, params=params,
                  timeout=CFG.get("worker_timeout_sec", 20), retries=0)
     j = r.json()
     if not isinstance(j, dict) or j.get("error"):
