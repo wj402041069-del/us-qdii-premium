@@ -244,7 +244,7 @@ def worker_fund_nav(code: str, start: str = "", end: str = "") -> pd.DataFrame:
     ])
     out.loc[out["cum_nav"].isna() | (out["cum_nav"] <= 0), "cum_nav"] = np.nan
     out["cum_nav"] = out["cum_nav"].fillna(out["nav"])
-    out["nav"] = out["cum_nav"]
+    # 注意：累计净值(acc_nav)只作参考列，绝不能覆盖 nav（溢价口径只能用单位净值）。
     out["date"] = out["date"].astype(DT)
     return out.dropna(subset=["date", "nav"]).query("nav > 0").sort_values("date").reset_index(drop=True)
 
@@ -423,7 +423,9 @@ def direct_pz_nav(code: str) -> pd.DataFrame:
         cum = pd.to_numeric(acc.get(x["x"]), errors="coerce")
         if pd.isna(nav) or nav <= 0:
             continue
-        rows.append((d, float(cum if pd.notna(cum) and cum > 0 else nav)))
+        # 溢价口径只能用「单位净值」；累计净值(acc)含历史分红/拆分，对部分基金会是
+        # 单位净值的多倍（如 513500 博时标普500ETF 累计≈单位的 2 倍），绝不能当 nav 用。
+        rows.append((d, float(nav)))
     if not rows:
         raise RuntimeError("净值序列为空")
     df = pd.DataFrame(rows, columns=["date", "nav"])
@@ -605,7 +607,7 @@ def ak_nav_history(code: str, venue: str) -> pd.DataFrame:
         out["cum_nav"] = pd.to_numeric(df["累计净值"], errors="coerce")
         bad = out["cum_nav"].isna() | (out["cum_nav"] <= 0)
         out.loc[bad, "cum_nav"] = out.loc[bad, "nav"]
-        out["nav"] = out["cum_nav"]
+    # 注意：累计净值只作参考列，绝不能用它覆盖单位净值（溢价口径只能用单位净值）。
     return out.dropna(subset=["date", "nav"]).query("nav > 0").sort_values("date").reset_index(drop=True)
 
 
