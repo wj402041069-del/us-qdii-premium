@@ -679,7 +679,7 @@ def _parse_sina_scale(df: pd.DataFrame) -> dict:
 
 
 def ak_jisilu() -> dict:
-    df = safe_call(_ak().qdii_e_index_jsl, timeout=60)
+    df = safe_call(_ak().fund_qdii_e_index_jsl, timeout=60)
     out = {}
     for _, row in df.iterrows():
         code = str(row.get("代码", "")).zfill(6)
