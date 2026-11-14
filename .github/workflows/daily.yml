@@ -25,6 +25,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      A_STOCK_API_KEY: ${{ secrets.A_STOCK_API_KEY }}
     timeout-minutes: 45
     steps:
       - name: 检出源码
