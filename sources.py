@@ -469,7 +469,7 @@ def direct_us_index(key: str) -> pd.DataFrame:
 
 def ak_us_index(key: str) -> pd.DataFrame:
     sym = CFG["index_symbols_sina"][key]
-    df = safe_call(_ak().index_us_stock_sina, symbol=sym, timeout=90)
+    df = safe_call(_ak().index_us_daily_sina, symbol=sym, timeout=90)
     out = df[["date", "close"]].copy()
     out["date"] = pd.to_datetime(out["date"].map(_to_dt)).astype(DT)
     out["close"] = pd.to_numeric(out["close"], errors="coerce")
@@ -679,7 +679,7 @@ def _parse_sina_scale(df: pd.DataFrame) -> dict:
 
 
 def ak_jisilu() -> dict:
-    df = safe_call(_ak().fund_qdii_e_index_jsl, timeout=60)
+    df = safe_call(_ak().fund_fund_qdii_e_index_jsl, timeout=60)
     out = {}
     for _, row in df.iterrows():
         code = str(row.get("代码", "")).zfill(6)
