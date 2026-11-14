@@ -14,6 +14,8 @@
   * stooq 现在有 JS 校验页，不能作为兜底。
   * pingzhongdata 的 x 是北京零点时间戳（UTC-16:00），必须 +8h 再取日期。
 """
+from __future__ import annotations
+
 import os
 
 
@@ -24,8 +26,6 @@ def _worker_headers(extra=None):
     if k:
         h["X-API-Key"] = k
     return h
-
-from __future__ import annotations
 
 import datetime as dt
 import json
@@ -551,16 +551,43 @@ def parse_daily_nav(df: pd.DataFrame) -> dict:
     return out
 
 
-def ak_daily_nav() -> dict:
-    out = {}
-    for label, fn in (("open", _ak().fund_open_fund_daily_em),
-                      ("etf", _ak().fund_etf_fund_daily_em)):
+def ak_daily_nav(codes: list | None = None) -> dict:
+    """最新净值批量表。
+
+    主路径：传入 seed 全量代码时，逐只直连天天基金 pingzhongdata 拉取最新单位净值
+    （与逐代码 nav_history 的 L1 同源，可靠且不依赖 AKShare）。
+    回退：部分 akshare 版本已移除 fund_open_fund_daily_em / fund_etf_fund_daily_em，
+    故用 getattr 保护，存在时才走批量表。
+    """
+    out: dict = {}
+    if codes:
+        for code in codes:
+            code = str(code).zfill(6)
+            try:
+                df = direct_pz_nav(code)
+                if df is not None and not df.empty:
+                    last = df.iloc[-1]
+                    out[code] = {
+                        "nav": float(last["nav"]),
+                        "nav_date": str(last["date"])[:10],
+                        "cum_nav": None,
+                    }
+            except Exception as exc:  # noqa: BLE001
+                log.debug("pz 净值 %s 失败: %s", code, exc)
+        if out:
+            return out
+    # 回退：AKShare 批量净值表（向前兼容仍保留该函数的版本）
+    ak = _ak()
+    for attr in ("fund_open_fund_daily_em", "fund_etf_fund_daily_em"):
+        fn = getattr(ak, attr, None)
+        if fn is None:
+            continue
         try:
             out.update(parse_daily_nav(safe_call(fn, timeout=120)))
         except Exception as exc:  # noqa: BLE001
-            log.debug("ak 净值表 %s 失败: %s", label, exc)
+            log.debug("ak 净值表 %s 失败: %s", attr, exc)
     if not out:
-        raise RuntimeError("ak 净值表全失败")
+        raise RuntimeError("净值批量表全失败（pingzhongdata + AKShare 均无有效结果）")
     return out
 
 
@@ -734,7 +761,7 @@ CHAIN_LABELS = {
               ("L2 AKShare fund_etf_spot_em", ak_etf_spot, lambda v: v is not None and len(v) > 100)],
     "LOF 行情": [("L1 东财 clist 直连", direct_lof_spot, lambda v: v is not None and len(v) > 10),
               ("L2 AKShare fund_lof_spot_em", ak_lof_spot, lambda v: v is not None and len(v) > 10)],
-    "最新净值批量表": [("L2 AKShare 全量净值表", ak_daily_nav, lambda v: bool(v) and len(v) > 1000)],
+    "最新净值批量表": [("L1 天天基金 pingzhongdata 净值表", ak_daily_nav, lambda v: bool(v) and len(v) >= 50)],
     "申购状态": [("L2 AKShare fund_purchase_em", ak_purchase, _nonempty)],
     "场外份额规模": [("L2 AKShare 新浪 QDII 份额", ak_scale_open, _nonempty),
                 ("L1 新浪份额 JSONP 直连", direct_sina_scale, _nonempty)],
@@ -752,8 +779,20 @@ def collect(seed: dict, fallback_codes: list | None = None) -> dict:
     QUIET_HITS.clear()
     worker_health()
 
+    seed_rows = seed.get("rows", []) if isinstance(seed, dict) else []
+    seed_codes = [str(r.get("code", "")).zfill(6) for r in seed_rows if r.get("code")]
+    venue_of = {str(r.get("code", "")).zfill(6): r.get("venue") for r in seed_rows if r.get("code")}
+
+    # 最新净值批量表：主路径改为直连天天基金 pingzhongdata（按 seed 代码），
+    # 不再依赖已被部分 akshare 版本移除的 fund_open_fund_daily_em 批量函数。
+    providers_map = dict(CHAIN_LABELS)
+    providers_map["最新净值批量表"] = [
+        ("L1 天天基金 pingzhongdata 净值表", lambda: ak_daily_nav(codes=seed_codes),
+         lambda v: bool(v) and len(v) >= 50),
+    ]
+
     raw = {}
-    for name, providers in CHAIN_LABELS.items():
+    for name, providers in providers_map.items():
         raw[name] = chain(name, [(lbl, fn) for lbl, fn, _ in providers],
                           validator=providers[0][2], optional=name in OPTIONAL_CHAINS)
 
@@ -783,7 +822,13 @@ def collect(seed: dict, fallback_codes: list | None = None) -> dict:
                 STATUS["warnings"].append(
                     "腾讯兜底返回的代码均不在已确认场内白名单内，已整体丢弃")
             else:
-                raw["ETF 行情"] = tx.reset_index(drop=True)
+                # 按已知场所把腾讯兜底数据分别并入 etf / lof 帧：兜底默认只写
+                # etf 帧，会让 LOF 代码在兜底日（venue_hint 还原为 LOF）查不到价而漏价。
+                tx_codes = tx["代码"].astype(str).str.zfill(6)
+                raw["ETF 行情"] = tx[tx_codes.map(lambda c: venue_of.get(c) == "ETF")].reset_index(drop=True)
+                lof_tx = tx[tx_codes.map(lambda c: venue_of.get(c) == "LOF")]
+                if not lof_tx.empty:
+                    raw["LOF 行情"] = lof_tx.reset_index(drop=True)
                 fallback_used = True
                 # 主源确实失败了，但场内价格已被兜底完整覆盖，状态面板不能
                 # 继续写「所有数据源均不可用」——那会让用户误以为数据是空的。
