@@ -1605,6 +1605,7 @@ python cleanup.py --limit-mb 500
 | 2026-11-11 | **修正散点图绿框**：旧代码用 `ymin+35%*(ymax-ymin)` 相对分位且从图顶起画，实际框住的是「低 TE + 高溢价」（当日下界 7.07%），与「低溢价」图例相反；改为**左下角 + 绝对阈值 `GOOD_PREM=2` / `GOOD_TE=1`**，新增 `scatterLegend` 显示阈值与落入数量（当前 0/18，标注「暂无标的进入便宜区」），说明文字改「左下＝低溢价且跟踪好」；两套模板、`check_pages.js` 断言、README 第 1 / 2.6 / 6 / 7.2 / 7.5 / 9 / 10 / 11 / 12 章同步 |
 
 | 2026-11-14 | **修复「最新净值批量表」链路永久失效**：原 `ak_daily_nav()` 调用的 `fund_open_fund_daily_em` / `fund_etf_fund_daily_em` 在现行 akshare 版本已移除（线上实测 `AttributeError`），导致该核心链永远降级（此前被逐代码净值兜底盖住、无可见后果）。改为**主路径直连天天基金 pingzhongdata 按 seed 代码逐只取最新单位净值**（与 `nav_history` L1 同源、可靠），AKShare 仅作前向兼容回退（`getattr` 保护）；链验证阈值由 `>1000` 降为 `>=50`。另修兜底日漏价隐患：腾讯行情兜底只写入 `etf_spot` 帧，而 `price_fallback_used` 已让 `venue_hint` 在兜底日把 LOF 代码还原为 LOF 场所，原本会让 2 只 LOF 场内基金查不到价而漏价；现按 seed 场所以 `venue_of` 把腾讯数据分别并入 `etf_spot` / `lof_spot` 帧，LOF 亦正常取价 |
+| 2026-11-14 | **移除 L0 自建 Worker 的 API-key 鉴权**：删除 `import os` / `_worker_headers()` / `worker_get` 的 `headers=` 参数（用户确认不再使用本地 Worker 鉴权，且 Worker 交叉校验本就是可选链、线上长期不可达）；该改动不影响任何核心源 |
 
 
 ---
