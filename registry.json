@@ -1,0 +1,757 @@
+{
+  "updated_at": "2026-11-14T23:32:09+08:00",
+  "funds": {
+    "000055": {
+      "name": "广发纳斯达克100ETF联接美元(QDII)A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "000834": {
+      "name": "大成纳斯达克100ETF联接(QDII)A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "003718": {
+      "name": "易方达标普500指数美元汇A",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "003722": {
+      "name": "易方达纳斯达克100ETF联接(QDII-LOF)A(美元现汇)",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "006075": {
+      "name": "博时标普500ETF联接C",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "006479": {
+      "name": "广发纳斯达克100ETF联接人民币(QDII)C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "006480": {
+      "name": "广发纳斯达克100ETF联接美元(QDII)C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "008971": {
+      "name": "大成纳斯达克100ETF联接(QDII)C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "012751": {
+      "name": "建信纳斯达克100指数(QDII)A美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "012752": {
+      "name": "建信纳斯达克100指数(QDII)C人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "012753": {
+      "name": "建信纳斯达克100指数(QDII)C美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "012860": {
+      "name": "易方达标普500指数人民币C",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "012861": {
+      "name": "易方达标普500指数美元汇C",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "012870": {
+      "name": "易方达纳斯达克100ETF联接(QDII-LOF)C(人民币)",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "012871": {
+      "name": "易方达纳斯达克100ETF联接(QDII-LOF)C(美元现汇)",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "013425": {
+      "name": "博时标普500ETF联接美元汇(QDII)A",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "013499": {
+      "name": "博时标普500ETF联接美元汇(QDII)C",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "014978": {
+      "name": "华安纳斯达克100ETF联接(QDII)C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "015299": {
+      "name": "华夏纳斯达克100ETF发起式联接(QDII)A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "015300": {
+      "name": "华夏纳斯达克100ETF发起式联接(QDII)C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "015518": {
+      "name": "华夏纳斯达克100ETF发起式联接(QDII)A美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "016055": {
+      "name": "博时纳斯达克100ETF发起式联接(QDII)A人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "016056": {
+      "name": "博时纳斯达克100ETF发起式联接(QDII)A美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "016057": {
+      "name": "博时纳斯达克100ETF发起式联接(QDII)C人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "016058": {
+      "name": "博时纳斯达克100ETF发起式联接(QDII)C美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "016452": {
+      "name": "南方纳斯达克100指数发起(QDII)A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "016453": {
+      "name": "南方纳斯达克100指数发起(QDII)C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "016532": {
+      "name": "嘉实纳斯达克100ETF发起联接(QDII)A人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "016533": {
+      "name": "嘉实纳斯达克100ETF发起联接(QDII)C人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "016534": {
+      "name": "嘉实纳斯达克100ETF发起联接(QDII)A美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "016535": {
+      "name": "嘉实纳斯达克100ETF发起联接(QDII)C美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "017028": {
+      "name": "国泰标普500ETF发起联接(QDII)A人民币",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "017030": {
+      "name": "国泰标普500ETF发起联接(QDII)C人民币",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "017641": {
+      "name": "摩根标普500指数(QDII)人民币A",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "017642": {
+      "name": "摩根标普500指数(QDII)美钞",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "017643": {
+      "name": "摩根标普500指数(QDII)美汇",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "018043": {
+      "name": "天弘纳斯达克100指数发起(QDII)A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "018044": {
+      "name": "天弘纳斯达克100指数发起(QDII)C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "018064": {
+      "name": "华夏标普500ETF发起式联接(QDII)A(人民币)",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "018065": {
+      "name": "华夏标普500ETF发起式联接(QDII)C",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "018066": {
+      "name": "华夏标普500ETF发起式联接(QDII)A(美元)",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "018738": {
+      "name": "博时标普500ETF联接E(人民币)",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "018966": {
+      "name": "汇添富纳斯达克100ETF发起式联接(QDII)人民币A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "018967": {
+      "name": "汇添富纳斯达克100ETF发起式联接(QDII)人民币C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "018968": {
+      "name": "汇添富纳斯达克100ETF发起式联接(QDII)美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "018969": {
+      "name": "汇添富纳斯达克100ETF发起式联接(QDII)美元现钞",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019172": {
+      "name": "摩根纳斯达克100指数(QDII)人民币A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019173": {
+      "name": "摩根纳斯达克100指数(QDII)人民币C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019174": {
+      "name": "摩根纳斯达克100指数(QDII)美元现汇A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019175": {
+      "name": "摩根纳斯达克100指数(QDII)美元现汇C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019305": {
+      "name": "摩根标普500指数(QDII)人民币C",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019441": {
+      "name": "万家纳斯达克100指数发起式(QDII)A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019442": {
+      "name": "万家纳斯达克100指数发起式(QDII)C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019524": {
+      "name": "华泰柏瑞纳斯达克100ETF发起式联接(QDII)A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019525": {
+      "name": "华泰柏瑞纳斯达克100ETF发起式联接(QDII)C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019547": {
+      "name": "招商纳斯达克100ETF发起式联接(QDII)A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019548": {
+      "name": "招商纳斯达克100ETF发起式联接(QDII)C",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019736": {
+      "name": "宝盈纳斯达克100指数发起(QDII)A人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019737": {
+      "name": "宝盈纳斯达克100指数发起(QDII)C人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019738": {
+      "name": "宝盈纳斯达克100指数发起(QDII)A美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "019739": {
+      "name": "宝盈纳斯达克100指数发起(QDII)C美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "021000": {
+      "name": "南方纳斯达克100指数发起(QDII)I",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "021773": {
+      "name": "汇添富纳斯达克100ETF发起式联接(QDII)人民币E",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "021778": {
+      "name": "广发纳指100ETF联接(QDII)人民币F",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "021838": {
+      "name": "嘉实纳斯达克100ETF发起联接(QDII)I人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "022525": {
+      "name": "天弘纳斯达克100指数发起(QDII)D",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "022664": {
+      "name": "华泰柏瑞纳斯达克100ETF发起式联接(QDII)I",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "023422": {
+      "name": "建信纳斯达克100指数(QDII)D人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "024237": {
+      "name": "博时纳斯达克100ETF发起式联接(QDII)I人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "040046": {
+      "name": "华安纳斯达克100ETF联接(QDII)A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "040047": {
+      "name": "华安纳斯达克100ETF联接(QDII)A美元现钞",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "040048": {
+      "name": "华安纳斯达克100ETF联接(QDII)A美元现汇",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "050025": {
+      "name": "博时标普500ETF联接A",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "159501": {
+      "name": "纳指ETF嘉实",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "159513": {
+      "name": "纳斯达克100ETF大成",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "159612": {
+      "name": "标普500ETF国泰",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "159632": {
+      "name": "纳斯达克ETF华安",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "159655": {
+      "name": "标普500ETF华夏",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "159659": {
+      "name": "纳斯达克100ETF招商",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "159660": {
+      "name": "纳指ETF汇添富",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "159696": {
+      "name": "纳指ETF易方达",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "159941": {
+      "name": "纳指ETF广发",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "160213": {
+      "name": "国泰纳斯达克100指数",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "161125": {
+      "name": "易方达标普500指数人民币A",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "161130": {
+      "name": "易方达纳斯达克100ETF联接(QDII-LOF)A(人民币)",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "270042": {
+      "name": "广发纳斯达克100ETF联接人民币(QDII)A",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "513100": {
+      "name": "纳指ETF国泰",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "513110": {
+      "name": "纳指ETF华泰柏瑞",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "513300": {
+      "name": "纳斯达克ETF华夏",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "513390": {
+      "name": "纳指100ETF博时",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "513500": {
+      "name": "标普500ETF博时",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "513650": {
+      "name": "标普500ETF南方",
+      "index_key": "SP500",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "513870": {
+      "name": "纳指ETF富国",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    },
+    "539001": {
+      "name": "建信纳斯达克100指数(QDII)A人民币",
+      "index_key": "NDX100",
+      "first_seen": "2026-11-10",
+      "status": "active",
+      "source": "auto",
+      "override_reason": ""
+    }
+  }
+}

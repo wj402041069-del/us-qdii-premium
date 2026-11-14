@@ -1,0 +1,222 @@
+{
+  "generated_at": "2026-11-14T23:30:20+08:00",
+  "chains": {
+    "基金名录": {
+      "active": "L1 天天基金名录 JS",
+      "attempts": [
+        {
+          "source": "L1 天天基金名录 JS",
+          "ok": true,
+          "ms": 865,
+          "detail": "28351 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "ETF 行情": {
+      "active": "none",
+      "attempts": [
+        {
+          "source": "L1 东财 clist 直连",
+          "ok": false,
+          "ms": 17745,
+          "detail": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+        },
+        {
+          "source": "L2 AKShare fund_etf_spot_em",
+          "ok": false,
+          "ms": 17083,
+          "detail": "HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7"
+        },
+        {
+          "source": "→ 由腾讯行情兜底覆盖",
+          "ok": true,
+          "ms": 0,
+          "detail": "白名单内 18 行"
+        }
+      ],
+      "failed": true,
+      "optional": false
+    },
+    "LOF 行情": {
+      "active": "none",
+      "attempts": [
+        {
+          "source": "L1 东财 clist 直连",
+          "ok": false,
+          "ms": 8580,
+          "detail": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+        },
+        {
+          "source": "L2 AKShare fund_lof_spot_em",
+          "ok": false,
+          "ms": 3028,
+          "detail": "Push2RateLimitError: 东方财富 push2 行情服务器断开了连接，通常是短时间内请求过多，当前 IP 被临时限流。首次限流一般约 5 分钟后恢复，反复触发后可能需要 40 分钟以上；等待期间不要重复调用东方财富的行情接口，否则会延长限流。"
+        }
+      ],
+      "failed": true,
+      "optional": false
+    },
+    "最新净值批量表": {
+      "active": "L1 天天基金 pingzhongdata 净值表",
+      "attempts": [
+        {
+          "source": "L1 天天基金 pingzhongdata 净值表",
+          "ok": true,
+          "ms": 29257,
+          "detail": "92 项"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "申购状态": {
+      "active": "L2 AKShare fund_purchase_em",
+      "attempts": [
+        {
+          "source": "L2 AKShare fund_purchase_em",
+          "ok": true,
+          "ms": 10819,
+          "detail": "28039 项"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "场外份额规模": {
+      "active": "L2 AKShare 新浪 QDII 份额",
+      "attempts": [
+        {
+          "source": "L2 AKShare 新浪 QDII 份额",
+          "ok": true,
+          "ms": 1097,
+          "detail": "316 项"
+        }
+      ],
+      "failed": false,
+      "optional": true
+    },
+    "集思录交叉校验": {
+      "active": "L2 AKShare 集思录 QDII",
+      "attempts": [
+        {
+          "source": "L2 AKShare 集思录 QDII",
+          "ok": true,
+          "ms": 959,
+          "detail": "20 项"
+        }
+      ],
+      "failed": false,
+      "optional": true
+    },
+    "汇率 USD/CNH": {
+      "active": "none",
+      "attempts": [
+        {
+          "source": "L1 东财 K 线直连",
+          "ok": false,
+          "ms": 6698,
+          "detail": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+        }
+      ],
+      "failed": true,
+      "optional": false
+    },
+    "美股指数 SP500": {
+      "active": "L2 新浪指数日线（AKShare）",
+      "attempts": [
+        {
+          "source": "L1 东财 100.SPX/100.NDX100 日线",
+          "ok": false,
+          "ms": 5615,
+          "detail": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+        },
+        {
+          "source": "L2 新浪指数日线（AKShare）",
+          "ok": true,
+          "ms": 1264,
+          "detail": "5757 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "美股指数 NDX100": {
+      "active": "L2 新浪指数日线（AKShare）",
+      "attempts": [
+        {
+          "source": "L1 东财 100.SPX/100.NDX100 日线",
+          "ok": false,
+          "ms": 3342,
+          "detail": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))"
+        },
+        {
+          "source": "L2 新浪指数日线（AKShare）",
+          "ok": true,
+          "ms": 287,
+          "detail": "3205 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "ETF 行情（腾讯兜底）": {
+      "active": "L1 腾讯行情批量快照",
+      "attempts": [
+        {
+          "source": "L1 腾讯行情批量快照",
+          "ok": true,
+          "ms": 898,
+          "detail": "18 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "Worker 溢价交叉校验": {
+      "active": "L0 Worker etf-premium",
+      "attempts": [
+        {
+          "source": "L0 Worker etf-premium",
+          "ok": true,
+          "ms": 168,
+          "detail": "18 项"
+        }
+      ],
+      "failed": false,
+      "optional": true
+    }
+  },
+  "warnings": [
+    "汇率 USD/CNH：所有数据源均不可用，已降级",
+    "东财 ETF / LOF 行情主源本次不可用，场内价格已由腾讯批量行情兜底完整覆盖；场外净值、申购状态、美股基准与汇率各自走正常链路",
+    "汇率改用上一次成功快照缓存"
+  ],
+  "worker_reachable": true,
+  "crosscheck": {
+    "worker_premium_rows": 18
+  },
+  "price_fallback_used": true,
+  "degraded_chains": [
+    "ETF 行情",
+    "LOF 行情",
+    "汇率 USD/CNH"
+  ],
+  "optional_degraded": [],
+  "stale": false,
+  "quiet_hits": {
+    "nav_history": {
+      "cached_or_failed": 2
+    }
+  },
+  "worker_crosscheck": {
+    "worker_premium_rows": 18
+  },
+  "layers": {
+    "L0": "a-stock-api Worker（fund-nav / etf-premium / trade-calendar）",
+    "L1": "东方财富 / 腾讯 / 新浪 直连",
+    "L2": "AKShare 批量表",
+    "L3": "仓库内上次成功快照与历史序列"
+  }
+}
