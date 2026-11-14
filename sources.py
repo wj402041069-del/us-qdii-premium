@@ -14,6 +14,17 @@
   * stooq 现在有 JS 校验页，不能作为兜底。
   * pingzhongdata 的 x 是北京零点时间戳（UTC-16:00），必须 +8h 再取日期。
 """
+import os
+
+
+# 自建 Worker 鉴权：密钥只从环境变量读取，绝不写进代码或提交历史
+def _worker_headers(extra=None):
+    h = dict(extra or {})
+    k = os.environ.get("A_STOCK_API_KEY", "")
+    if k:
+        h["X-API-Key"] = k
+    return h
+
 from __future__ import annotations
 
 import datetime as dt
@@ -200,7 +211,7 @@ def worker_enabled() -> bool:
 def worker_get(path: str, params: dict | None = None):
     if not worker_enabled():
         raise RuntimeError("worker disabled")
-    r = http_get(WORKER + path, params=params,
+    r = http_get(WORKER + path, params=params, headers=_worker_headers(),
                  timeout=CFG.get("worker_timeout_sec", 20), retries=0)
     j = r.json()
     if not isinstance(j, dict) or j.get("error"):
