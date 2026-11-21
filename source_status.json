@@ -1,0 +1,186 @@
+{
+  "generated_at": "2026-11-21T21:52:56+08:00",
+  "chains": {
+    "基金名录": {
+      "active": "L1 天天基金名录 JS",
+      "attempts": [
+        {
+          "source": "L1 天天基金名录 JS",
+          "ok": true,
+          "ms": 630,
+          "detail": "28407 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "ETF 行情": {
+      "active": "→ 由腾讯行情兜底覆盖",
+      "attempts": [
+        {
+          "source": "→ 由腾讯行情兜底覆盖",
+          "ok": true,
+          "ms": 0,
+          "detail": "白名单内 16 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "LOF 行情": {
+      "active": "→ 由腾讯行情兜底覆盖",
+      "attempts": [
+        {
+          "source": "→ 由腾讯行情兜底覆盖",
+          "ok": true,
+          "ms": 0,
+          "detail": "白名单内 2 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "最新净值批量表": {
+      "active": "L1 天天基金 pingzhongdata 净值表",
+      "attempts": [
+        {
+          "source": "L1 天天基金 pingzhongdata 净值表",
+          "ok": true,
+          "ms": 122784,
+          "detail": "92 项"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "申购状态": {
+      "active": "L2 AKShare fund_purchase_em",
+      "attempts": [
+        {
+          "source": "L2 AKShare fund_purchase_em",
+          "ok": true,
+          "ms": 5637,
+          "detail": "28100 项"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "场外份额规模": {
+      "active": "L2 AKShare 新浪 QDII 份额",
+      "attempts": [
+        {
+          "source": "L2 AKShare 新浪 QDII 份额",
+          "ok": true,
+          "ms": 953,
+          "detail": "316 项"
+        }
+      ],
+      "failed": false,
+      "optional": true
+    },
+    "集思录交叉校验": {
+      "active": "L2 AKShare 集思录 QDII",
+      "attempts": [
+        {
+          "source": "L2 AKShare 集思录 QDII",
+          "ok": true,
+          "ms": 1434,
+          "detail": "20 项"
+        }
+      ],
+      "failed": false,
+      "optional": true
+    },
+    "汇率 USD/CNH": {
+      "active": "L1 东财 K 线直连",
+      "attempts": [
+        {
+          "source": "L1 东财 K 线直连",
+          "ok": true,
+          "ms": 5483,
+          "detail": "1795 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "美股指数 SP500": {
+      "active": "L1 东财 100.SPX/100.NDX100 日线",
+      "attempts": [
+        {
+          "source": "L1 东财 100.SPX/100.NDX100 日线",
+          "ok": true,
+          "ms": 812,
+          "detail": "1732 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "美股指数 NDX100": {
+      "active": "L1 东财 100.SPX/100.NDX100 日线",
+      "attempts": [
+        {
+          "source": "L1 东财 100.SPX/100.NDX100 日线",
+          "ok": true,
+          "ms": 3436,
+          "detail": "1732 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "ETF 行情（腾讯兜底）": {
+      "active": "L1 腾讯行情批量快照",
+      "attempts": [
+        {
+          "source": "L1 腾讯行情批量快照",
+          "ok": true,
+          "ms": 1442,
+          "detail": "18 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "Worker 溢价交叉校验": {
+      "active": "L0 Worker etf-premium",
+      "attempts": [
+        {
+          "source": "L0 Worker etf-premium",
+          "ok": true,
+          "ms": 4969,
+          "detail": "18 项"
+        }
+      ],
+      "failed": false,
+      "optional": true
+    }
+  },
+  "warnings": [
+    "东财 ETF / LOF 行情主源本次不可用，场内价格已由腾讯批量行情兜底完整覆盖；场外净值、申购状态、美股基准与汇率各自走正常链路"
+  ],
+  "worker_reachable": true,
+  "crosscheck": {
+    "worker_premium_rows": 18
+  },
+  "price_fallback_used": true,
+  "degraded_chains": [],
+  "optional_degraded": [],
+  "stale": false,
+  "quiet_hits": {
+    "nav_history": {
+      "cached_or_failed": 2
+    }
+  },
+  "worker_crosscheck": {
+    "worker_premium_rows": 18
+  },
+  "layers": {
+    "L0": "a-stock-api Worker（fund-nav / etf-premium / trade-calendar）",
+    "L1": "东方财富 / 腾讯 / 新浪 直连",
+    "L2": "AKShare 批量表",
+    "L3": "仓库内上次成功快照与历史序列"
+  }
+}
