@@ -1611,6 +1611,7 @@ python cleanup.py --limit-mb 500
 | 2026-11-14 | **修复「美股指数」L2 链全部失败**：akshare 约 1.20.45 将 `index_us_stock_sina` 更名为 `index_us_daily_sina`（旧名已删除，调用即 AttributeError）。该链为美股基准（标普500 / 纳斯达克100）的 L2 回退源，核心数据由 L1 东财 `100.SPX` / `100.NDX100` 直连保障、故此前无可见后果；改为新函数名即恢复 L2 信号 |
 | 2026-11-14 | **汇率 USD/CNH 增加 L2 兜底源（新浪 USDCNH 实时）**：原 `汇率 USD/CNH` 链只有 L1 东财 K 线直连一条，东财一挂即彻底缺汇率，且校验 `len(v) > 100` 会拒掉单行数据。新增 `direct_fx_l2()` 走新浪 `hq.sinajs.cn/list=USDCNH`（独立于东财、单行返回），链验证阈值放宽到 `>=1`；东财正常时仍走 L1，仅失败时回退新浪，避免估算净值因缺汇率而整体报错 |
 | 2026-11-14 | **修复腾讯兜底日「LOF 行情全部失败」误报**：兜底块此前只把数据写进 `raw["LOF 行情"]` 并补记 `ETF 行情` 成功，却没把 `LOF 行情` 链路的 `failed` 翻回 False、也没写 `active` 来源；`chain()` 早把 LOF 记为失败，面板照 `STATUS` 显示「全部失败」，把「已用腾讯兜底价」误报成「无数据」。（ETF 同理，原补记也漏了 `failed`。）现兜底成功覆盖的场内帧按场所把对应链路记录改写为 `failed:False` + `active:"→ 由腾讯行情兜底覆盖"`，LOF/ETF 同时正确显示兜底命中、不再计入 `degraded_chains` |
+| 2026-11-22 | **升级 akshare 到 1.20.65，并修复场内净值兜底链**：`fund_etf_fund_info_em` 在 1.20.65 已被彻底移除（连改名登记都没有），`ak_nav_history` 的 ETF 分支会抛 `AttributeError`，让「L2 AKShare 净值走势」这层兜底静默失效（前有 L0 Worker / L1 pingzhongdata，页面照常出，所以一直没人发现）。改用 `fund_exchange_nav_hist_em`（场内基金历史净值，列名同为 净值日期 / 单位净值 / 累计净值，实测 513100、159941 各 455 行正常），并保留旧名 `getattr` 回退；`requirements.txt` 由 `akshare>=1.16,<2` 改为精确锁 `akshare==1.20.65`（上游 1.20.44 起累计改名 405 个接口，宽范围等于每次 CI 抽签） |
 
 
 ---

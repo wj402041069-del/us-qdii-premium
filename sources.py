@@ -610,7 +610,14 @@ def ak_daily_nav(codes: list | None = None) -> dict:
 def ak_nav_history(code: str, venue: str) -> pd.DataFrame:
     ak = _ak()
     if venue == "ETF":
-        df = safe_call(ak.fund_etf_fund_info_em, fund=code, timeout=40)
+        # akshare 1.20.65 已删除 fund_etf_fund_info_em（不是改名登记，是彻底移除），
+        # 替代为场内基金历史净值 fund_exchange_nav_hist_em，列名一致（净值日期/单位净值/累计净值）。
+        # 保留旧名 getattr 回退，方便本地装老版本时仍可用。
+        etf_nav_fn = (getattr(ak, "fund_exchange_nav_hist_em", None)
+                      or getattr(ak, "fund_etf_fund_info_em", None))
+        if etf_nav_fn is None:
+            raise RuntimeError("当前 akshare 无场内基金净值接口（fund_exchange_nav_hist_em 缺失）")
+        df = safe_call(etf_nav_fn, fund=code, timeout=40)
     else:
         df = safe_call(ak.fund_open_fund_info_em, symbol=code,
                        indicator="单位净值走势", timeout=40)
