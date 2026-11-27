@@ -1,0 +1,171 @@
+{
+  "generated_at": "2026-11-27T22:16:33+08:00",
+  "chains": {
+    "基金名录": {
+      "active": "L1 天天基金名录 JS",
+      "attempts": [
+        {
+          "source": "L1 天天基金名录 JS",
+          "ok": true,
+          "ms": 952,
+          "detail": "28437 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "ETF 行情": {
+      "active": "L1 东财 clist 直连",
+      "attempts": [
+        {
+          "source": "L1 东财 clist 直连",
+          "ok": true,
+          "ms": 19160,
+          "detail": "1691 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "LOF 行情": {
+      "active": "L1 东财 clist 直连",
+      "attempts": [
+        {
+          "source": "L1 东财 clist 直连",
+          "ok": true,
+          "ms": 4470,
+          "detail": "389 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "最新净值批量表": {
+      "active": "L1 天天基金 pingzhongdata 净值表",
+      "attempts": [
+        {
+          "source": "L1 天天基金 pingzhongdata 净值表",
+          "ok": true,
+          "ms": 41292,
+          "detail": "92 项"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "申购状态": {
+      "active": "L2 AKShare fund_purchase_em",
+      "attempts": [
+        {
+          "source": "L2 AKShare fund_purchase_em",
+          "ok": true,
+          "ms": 57429,
+          "detail": "28163 项"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "场外份额规模": {
+      "active": "L2 AKShare 新浪 QDII 份额",
+      "attempts": [
+        {
+          "source": "L2 AKShare 新浪 QDII 份额",
+          "ok": true,
+          "ms": 1908,
+          "detail": "316 项"
+        }
+      ],
+      "failed": false,
+      "optional": true
+    },
+    "集思录交叉校验": {
+      "active": "L2 AKShare 集思录 QDII",
+      "attempts": [
+        {
+          "source": "L2 AKShare 集思录 QDII",
+          "ok": true,
+          "ms": 1418,
+          "detail": "20 项"
+        }
+      ],
+      "failed": false,
+      "optional": true
+    },
+    "汇率 USD/CNH": {
+      "active": "L1 东财 K 线直连",
+      "attempts": [
+        {
+          "source": "L1 东财 K 线直连",
+          "ok": true,
+          "ms": 2195,
+          "detail": "1800 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "美股指数 SP500": {
+      "active": "L1 东财 100.SPX/100.NDX100 日线",
+      "attempts": [
+        {
+          "source": "L1 东财 100.SPX/100.NDX100 日线",
+          "ok": true,
+          "ms": 1007,
+          "detail": "1735 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "美股指数 NDX100": {
+      "active": "L1 东财 100.SPX/100.NDX100 日线",
+      "attempts": [
+        {
+          "source": "L1 东财 100.SPX/100.NDX100 日线",
+          "ok": true,
+          "ms": 1729,
+          "detail": "1735 行"
+        }
+      ],
+      "failed": false,
+      "optional": false
+    },
+    "Worker 溢价交叉校验": {
+      "active": "L0 Worker etf-premium",
+      "attempts": [
+        {
+          "source": "L0 Worker etf-premium",
+          "ok": true,
+          "ms": 4508,
+          "detail": "18 项"
+        }
+      ],
+      "failed": false,
+      "optional": true
+    }
+  },
+  "warnings": [],
+  "worker_reachable": true,
+  "crosscheck": {
+    "worker_premium_rows": 18
+  },
+  "price_fallback_used": false,
+  "degraded_chains": [],
+  "optional_degraded": [],
+  "stale": false,
+  "quiet_hits": {
+    "nav_history": {
+      "cached_or_failed": 2
+    }
+  },
+  "worker_crosscheck": {
+    "worker_premium_rows": 18
+  },
+  "layers": {
+    "L0": "a-stock-api Worker（fund-nav / etf-premium / trade-calendar）",
+    "L1": "东方财富 / 腾讯 / 新浪 直连",
+    "L2": "AKShare 批量表",
+    "L3": "仓库内上次成功快照与历史序列"
+  }
+}

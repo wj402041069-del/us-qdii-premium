@@ -1,0 +1,62 @@
+{
+  "limit_mb": 500,
+  "limit_bytes": 524288000,
+  "before_bytes": 1211629,
+  "actions": [
+    {
+      "action": "sweep_junk",
+      "count": 1,
+      "bytes": 74394,
+      "sample": [
+        {
+          "path": "__pycache__",
+          "bytes": 74394
+        }
+      ]
+    }
+  ],
+  "after_bytes": 1211629,
+  "ok": true,
+  "files": [
+    {
+      "name": "history.json",
+      "bytes": 829376
+    },
+    {
+      "name": "index.html",
+      "bytes": 128090
+    },
+    {
+      "name": "latest.json",
+      "bytes": 122935
+    },
+    {
+      "name": "seed.json",
+      "bytes": 85947
+    },
+    {
+      "name": "registry.json",
+      "bytes": 21003
+    },
+    {
+      "name": "ranking.csv",
+      "bytes": 16482
+    },
+    {
+      "name": "source_status.json",
+      "bytes": 3964
+    },
+    {
+      "name": "llms.txt",
+      "bytes": 3705
+    },
+    {
+      "name": "meta.json",
+      "bytes": 127
+    },
+    {
+      "name": ".nojekyll",
+      "bytes": 0
+    }
+  ]
+}
